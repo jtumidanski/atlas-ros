@@ -2,9 +2,11 @@ package main
 
 import (
 	"atlas-ros/database"
+	"atlas-ros/kafka/consumers"
 	"atlas-ros/logger"
 	"atlas-ros/reactor/drop"
 	"atlas-ros/rest"
+	"atlas-ros/wz"
 	"context"
 	"os"
 	"os/signal"
@@ -19,9 +21,14 @@ func main() {
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
 
+	wzDir := os.Getenv("WZ_DIR")
+	wz.GetFileCache().Init(wzDir)
+
 	db := database.ConnectToDatabase(l)
 
 	drop.Initialize(l, db)
+
+	consumers.CreateEventConsumers(l, db, ctx, wg)
 
 	rest.CreateRestService(l, db, ctx, wg)
 

@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 	"sync"
 )
 
@@ -28,11 +29,35 @@ func ProduceRoutes(db *gorm.DB) func(l logrus.FieldLogger) http.Handler {
 		r.HandleFunc("/{id}/hits/relationships/characters", reactor.HandleHitReactor(l, db)).Methods(http.MethodPost)
 
 		w := router.PathPrefix("/worlds").Subrouter()
-		w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", _map.HandleGetReactors(l, db)).Methods(http.MethodGet)
-		w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", _map.HandleCreateReactor(l, db)).Methods(http.MethodPost)
-		w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors/shuffle", _map.HandleGetReactors(l, db)).Methods(http.MethodPost)
-
+		w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", ParseMap(l, db, _map.HandleGetReactors)).Methods(http.MethodGet)
+		w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", ParseMap(l, db, _map.HandleCreateReactor)).Methods(http.MethodPost)
 
 		return router
+	}
+}
+
+type MapHandler func(l logrus.FieldLogger, db *gorm.DB, worldId byte, channelId byte, mapId uint32) http.HandlerFunc
+
+func ParseMap(l logrus.FieldLogger, db *gorm.DB, next MapHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		worldId, err := strconv.Atoi(mux.Vars(r)["worldId"])
+		if err != nil {
+			l.WithError(err).Errorf("Unable to properly parse worldId from path.")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		channelId, err := strconv.Atoi(mux.Vars(r)["channelId"])
+		if err != nil {
+			l.WithError(err).Errorf("Unable to properly parse channelId from path.")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		mapId, err := strconv.Atoi(mux.Vars(r)["mapId"])
+		if err != nil {
+			l.WithError(err).Errorf("Unable to properly parse mapId from path.")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		next(l, db, byte(worldId), byte(channelId), uint32(mapId))(w, r)
 	}
 }

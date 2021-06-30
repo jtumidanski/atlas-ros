@@ -1,7 +1,7 @@
 package requests
 
 import (
-	json2 "atlas-ncs/json"
+	json2 "atlas-ros/json"
 	"net/http"
 )
 

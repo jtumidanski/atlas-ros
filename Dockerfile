@@ -25,5 +25,6 @@ WORKDIR /
 
 COPY --from=build-env /server /
 COPY data /data
+COPY /wz /wz
 
 CMD ["/server"]
