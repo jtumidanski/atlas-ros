@@ -1,0 +1,36 @@
+{
+  "items": [{
+    "item_id": 4031161,
+    "quest_id": 1008,
+    "chance": 1
+  }, {
+    "item_id": 4031162,
+    "quest_id": 1008,
+    "chance": 1
+  }, {
+    "item_id": 2010009,
+    "quest_id": 0,
+    "chance": 2
+  }, {
+    "item_id": 2010000,
+    "quest_id": 0,
+    "chance": 4
+  }, {
+    "item_id": 2000000,
+    "quest_id": 0,
+    "chance": 4
+  }, {
+    "item_id": 2000001,
+    "quest_id": 0,
+    "chance": 7
+  }, {
+    "item_id": 2000002,
+    "quest_id": 0,
+    "chance": 10
+  }, {
+    "item_id": 2000003,
+    "quest_id": 0,
+    "chance": 15
+  }],
+  "id": 2001
+}
