@@ -29,7 +29,7 @@ func EmptyCreateReactorCommand() handler.EmptyEventCreator {
 func HandleCreateReactorCommand(db *gorm.DB) handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if command, ok := e.(*createReactorCommand); ok {
-			_, err := reactor.Create(l, db)(command.WorldId, command.ChannelId, command.MapId, command.ReactorId, command.Name, command.State, command.X, command.Y, command.Delay, command.Direction)
+			_, err := reactor.Create(l)(command.WorldId, command.ChannelId, command.MapId, command.ReactorId, command.Name, command.State, command.X, command.Y, command.Delay, command.Direction)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to create reactor %d in map %d by command.", command.ReactorId, command.MapId)
 			}

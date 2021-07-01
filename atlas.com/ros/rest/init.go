@@ -22,17 +22,31 @@ func ProduceRoutes(db *gorm.DB) func(l logrus.FieldLogger) http.Handler {
 		router.Use(CommonHeader)
 
 		r := router.PathPrefix("/reactors").Subrouter()
-		r.HandleFunc("/{id}", reactor.HandleGetReactor(l, db)).Methods(http.MethodGet)
-		r.HandleFunc("/{id}/reset", reactor.HandleResetReactor(l, db)).Methods(http.MethodPost)
-		r.HandleFunc("/{id}", reactor.HandleUpdateReactor(l, db)).Methods(http.MethodPatch)
-		r.HandleFunc("/{id}", reactor.HandleDestroyReactor(l, db)).Methods(http.MethodDelete)
-		r.HandleFunc("/{id}/hits/relationships/characters", reactor.HandleHitReactor(l, db)).Methods(http.MethodPost)
+		r.HandleFunc("/{id}", ParseReactor(l, db, reactor.HandleGetReactor)).Methods(http.MethodGet)
+		r.HandleFunc("/{id}/reset", ParseReactor(l, db, reactor.HandleResetReactor)).Methods(http.MethodPost)
+		r.HandleFunc("/{id}", ParseReactor(l, db, reactor.HandleUpdateReactor)).Methods(http.MethodPatch)
+		r.HandleFunc("/{id}", ParseReactor(l, db, reactor.HandleDestroyReactor)).Methods(http.MethodDelete)
+		r.HandleFunc("/{id}/hits/relationships/characters", ParseReactor(l, db, reactor.HandleHitReactor)).Methods(http.MethodPost)
 
 		w := router.PathPrefix("/worlds").Subrouter()
 		w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", ParseMap(l, db, _map.HandleGetReactors)).Methods(http.MethodGet)
 		w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", ParseMap(l, db, _map.HandleCreateReactor)).Methods(http.MethodPost)
 
 		return router
+	}
+}
+
+type ReactorHandler func(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.HandlerFunc
+
+func ParseReactor(l logrus.FieldLogger, db *gorm.DB, next ReactorHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		reactorId, err := strconv.Atoi(mux.Vars(r)["reactorId"])
+		if err != nil {
+			l.WithError(err).Errorf("Unable to properly parse reactorId from path.")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		next(l, db, uint32(reactorId))
 	}
 }
 

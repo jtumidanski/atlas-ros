@@ -29,8 +29,22 @@ func HandleCreateReactor(l logrus.FieldLogger, _ *gorm.DB, worldId byte, channel
 	}
 }
 
-func HandleGetReactors(l logrus.FieldLogger, db *gorm.DB, worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func HandleGetReactors(l logrus.FieldLogger, _ *gorm.DB, worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		reactors := reactor.GetInMap(l)(worldId, channelId, mapId)
 
+		result := &reactor.DataListContainer{Data: make([]reactor.DataBody, 0)}
+		for _, r := range reactors {
+			body := reactor.MakeReactorBody(r)
+			result.Data = append(result.Data, body)
+		}
+
+		err := json.ToJSON(result, w)
+		if err != nil {
+			l.WithError(err).Errorf("Encoding response")
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
 	}
 }
