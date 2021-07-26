@@ -16,7 +16,7 @@ type registry struct {
 var once sync.Once
 var reg *registry
 
-var uniqueId = uint32(1000000001)
+var runningUniqueId = uint32(1000000001)
 
 type MapKey struct {
 	worldId   byte
@@ -127,15 +127,15 @@ func (r *registry) Update(id uint32, modifiers ...Modifier) (*Model, error) {
 func (r *registry) getNextUniqueId() uint32 {
 	ids := existingIds(r.reactors)
 
-	var currentUniqueId = uniqueId
+	var currentUniqueId = runningUniqueId
 	for contains(ids, currentUniqueId) {
 		currentUniqueId = currentUniqueId + 1
 		if currentUniqueId > 2000000000 {
 			currentUniqueId = 1000000001
 		}
-		uniqueId = currentUniqueId
+		runningUniqueId = currentUniqueId
 	}
-	return uniqueId
+	return runningUniqueId
 }
 
 func (r *registry) Destroy(id uint32) {

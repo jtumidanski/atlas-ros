@@ -4,6 +4,8 @@ import (
 	"atlas-ros/database"
 	"atlas-ros/kafka/consumers"
 	"atlas-ros/logger"
+	_map "atlas-ros/map"
+	"atlas-ros/reactor"
 	"atlas-ros/reactor/drop"
 	"atlas-ros/reactor/script/initializer"
 	"atlas-ros/reactor/script/registry"
@@ -26,7 +28,7 @@ func main() {
 	wzDir := os.Getenv("WZ_DIR")
 	wz.GetFileCache().Init(wzDir)
 
-	db := database.ConnectToDatabase(l)
+	db := database.Connect(l, database.SetMigrations(drop.Migration))
 
 	drop.Initialize(l, db)
 
@@ -34,7 +36,7 @@ func main() {
 
 	consumers.CreateEventConsumers(l, db, ctx, wg)
 
-	rest.CreateRestService(l, db, ctx, wg)
+	rest.CreateService(l, db, ctx, wg, "/ms/ros", reactor.InitResource, _map.InitResource)
 
 	// trap sigterm or interrupt and gracefully shutdown the server
 	c := make(chan os.Signal, 1)

@@ -33,8 +33,8 @@ func Get(_ logrus.FieldLogger) func(uniqueId uint32) (*Model, error) {
 	}
 }
 
-func Hit(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorId uint32, characterId uint32, characterPosition uint32, stance uint16, skillId uint32) error {
-	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32, characterId uint32, characterPosition uint32, stance uint16, skillId uint32) error {
+func Hit(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32, characterPosition uint32, stance uint16, skillId uint32) error {
+	return func(uniqueId uint32, characterId uint32, characterPosition uint32, stance uint16, skillId uint32) error {
 		r, err := Get(l)(uniqueId)
 		if err != nil {
 			return err
@@ -52,7 +52,7 @@ func Hit(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, 
 							continue
 						}
 					}
-					r, err = GetRegistry().Update(reactorId, advanceState(i))
+					r, err = GetRegistry().Update(uniqueId, advanceState(i))
 					if err != nil {
 						return err
 					}
@@ -71,7 +71,7 @@ func Hit(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, 
 						if r.State() == r.NextState(i) {
 							act(l)(characterId, r)
 						}
-						r, err = GetRegistry().Update(reactorId, shouldCollect(true))
+						r, err = GetRegistry().Update(uniqueId, shouldCollect(true))
 						if err != nil {
 							return err
 						}
@@ -83,7 +83,7 @@ func Hit(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, 
 				}
 			}
 		} else {
-			r, err = GetRegistry().Update(reactorId, incrementState(), shouldCollect(true))
+			r, err = GetRegistry().Update(uniqueId, incrementState(), shouldCollect(true))
 			if err != nil {
 				return err
 			}
@@ -144,14 +144,14 @@ func searchItem(l logrus.FieldLogger) func(r *Model) {
 	}
 }
 
-func Touch(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorId uint32) error {
-	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32) error {
+func Touch(l logrus.FieldLogger) func(uniqueId uint32) error {
+	return func(uniqueId uint32) error {
 		return nil
 	}
 }
 
-func Release(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorId uint32) error {
-	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32) error {
+func Release(l logrus.FieldLogger) func(uniqueId uint32) error {
+	return func(uniqueId uint32) error {
 		return nil
 	}
 }
