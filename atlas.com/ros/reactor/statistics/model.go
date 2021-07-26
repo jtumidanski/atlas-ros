@@ -16,16 +16,16 @@ func (p Point) Y() int16 {
 type Model struct {
 	tl          Point
 	br          Point
-	stateInfo   map[byte][]ReactorState
-	timeoutInfo map[byte]int32
+	stateInfo   map[int8][]ReactorState
+	timeoutInfo map[int8]int32
 }
 
 func NewModel() *Model {
 	return &Model{
 		tl:          Point{0, 0},
 		br:          Point{0, 0},
-		stateInfo:   make(map[byte][]ReactorState, 0),
-		timeoutInfo: make(map[byte]int32),
+		stateInfo:   make(map[int8][]ReactorState, 0),
+		timeoutInfo: make(map[int8]int32),
 	}
 }
 
@@ -33,7 +33,7 @@ func (m Model) Tl() Point {
 	return m.tl
 }
 
-func (m Model) AddState(state byte, data []ReactorState, timeout int32) *Model {
+func (m Model) AddState(state int8, data []ReactorState, timeout int32) *Model {
 	nm := &Model{
 		tl:          m.tl,
 		br:          m.br,
@@ -68,19 +68,55 @@ func (m Model) SetRB(x int32, y int32) *Model {
 	return nm
 }
 
-func (m Model) Type(state byte) uint32 {
+func (m Model) Type(state int8) int32 {
 	return m.stateInfo[state][0].Type()
 }
 
-type ReactorState struct {
-	theType      uint32
-	reactorItem  *ReactorItem
-	activeSkills []uint32
-	nextState    byte
+func (m Model) NextState(state int8, index byte) int8 {
+	val, ok := m.stateInfo[state]
+	if !ok {
+		return -1
+	}
+	if len(val) < int(index)+1 {
+		return -1
+	}
+	nsd := m.stateInfo[state][index]
+	return nsd.NextState()
 }
 
-func (s ReactorState) Type() uint32 {
+func (m Model) StateSize(state int8) byte {
+	return byte(len(m.stateInfo[state]))
+}
+
+func (m Model) ActiveSkills(state int8, i byte) []uint32 {
+	val, ok := m.stateInfo[state]
+	if !ok {
+		return make([]uint32, 0)
+	}
+	if len(val) < int(i)+1 {
+		return make([]uint32, 0)
+	}
+	s := m.stateInfo[state][i]
+	return s.ActiveSkills()
+}
+
+type ReactorState struct {
+	theType      int32
+	reactorItem  *ReactorItem
+	activeSkills []uint32
+	nextState    int8
+}
+
+func (s ReactorState) Type() int32 {
 	return s.theType
+}
+
+func (s ReactorState) NextState() int8 {
+	return s.nextState
+}
+
+func (s ReactorState) ActiveSkills() []uint32 {
+	return s.activeSkills
 }
 
 type ReactorItem struct {

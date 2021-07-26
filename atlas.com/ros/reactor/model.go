@@ -10,7 +10,7 @@ type Model struct {
 	id             uint32
 	name           string
 	statistics     statistics.Model
-	state          byte
+	state          int8
 	eventState     byte
 	delay          uint32
 	direction      byte
@@ -34,11 +34,12 @@ func (m Model) Name() string {
 	return m.name
 }
 
-func (m Model) Type() uint32 {
+// Type 2 = only hit from right (kerning swamp plants), 00 is air left 02 is ground left
+func (m Model) Type() int32 {
 	return m.statistics.Type(m.State())
 }
 
-func (m Model) State() byte {
+func (m Model) State() int8 {
 	return m.state
 }
 
@@ -60,4 +61,52 @@ func (m Model) Delay() uint32 {
 
 func (m Model) FacingDirection() byte {
 	return m.direction
+}
+
+func (m Model) Active() bool {
+	return m.alive && m.Type() != -1
+}
+
+func (m Model) StateSize() byte {
+	return m.statistics.StateSize(m.state)
+}
+
+func (m Model) ActiveSkills(i byte) []uint32 {
+	return m.statistics.ActiveSkills(m.state, i)
+}
+
+func (m Model) NextState(b byte) int8 {
+	return m.statistics.NextState(m.state, b)
+}
+
+func (m Model) WorldId() byte {
+	return m.worldId
+}
+
+func (m Model) ChannelId() byte {
+	return m.channelId
+}
+
+func (m Model) MapId() uint32 {
+	return m.mapId
+}
+
+type Modifier func(m *Model)
+
+func incrementState() Modifier {
+	return func(m *Model) {
+		m.state++
+	}
+}
+
+func advanceState(b byte) Modifier {
+	return func(m *Model) {
+		m.state = m.statistics.NextState(m.state, b)
+	}
+}
+
+func shouldCollect(value bool) Modifier {
+	return func(m *Model) {
+		m.shouldCollect = value
+	}
 }

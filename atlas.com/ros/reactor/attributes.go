@@ -23,8 +23,8 @@ type DataBody struct {
 type Attributes struct {
 	Id              uint32 `json:"id"`
 	Name            string `json:"name"`
-	Type            uint32 `json:"type"`
-	State           byte   `json:"state"`
+	Type            int32  `json:"type"`
+	State           int8   `json:"state"`
 	EventState      byte   `json:"event_state"`
 	X               int16  `json:"x"`
 	Y               int16  `json:"y"`

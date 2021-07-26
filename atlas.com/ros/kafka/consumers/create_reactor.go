@@ -13,7 +13,7 @@ type createReactorCommand struct {
 	MapId     uint32 `json:"map_id"`
 	ReactorId uint32 `json:"reactor_id"`
 	Name      string `json:"name"`
-	State     byte   `json:"state"`
+	State     int8   `json:"state"`
 	X         int16  `json:"x"`
 	Y         int16  `json:"y"`
 	Delay     uint32 `json:"delay"`

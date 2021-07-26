@@ -37,7 +37,7 @@ func readStatistics(id uint32) (*Model, error) {
 	loadArea := info.GetIntegerWithDefault("activateByTouch", 0) != 0
 
 	rid, err := rd.ChildByName("0")
-	i := byte(0)
+	i := int8(0)
 	m := NewModel()
 	for rid != nil {
 		areaSet := false
@@ -47,7 +47,7 @@ func readStatistics(id uint32) (*Model, error) {
 			timeout := ed.GetIntegerWithDefault("timeOut", -1)
 
 			for _, md := range ed.ChildNodes {
-				t := uint32(md.GetIntegerWithDefault("type", 0))
+				t := md.GetIntegerWithDefault("type", 0)
 				var ri *ReactorItem
 				if t == 100 {
 					itemId := uint32(md.GetIntegerWithDefault("0", 0))
@@ -66,14 +66,14 @@ func readStatistics(id uint32) (*Model, error) {
 						skillIds = append(skillIds, uint32(md.GetIntegerWithDefault(s.Name, 0)))
 					}
 				}
-				ns := byte(md.GetIntegerWithDefault("state", 0))
+				ns := int8(md.GetIntegerWithDefault("state", 0))
 				sdl = append(sdl, ReactorState{theType: t, reactorItem: ri, activeSkills: skillIds, nextState: ns})
 			}
 
 			m = m.AddState(i, sdl, timeout)
 		}
 		i++
-		rid, _ = rd.ChildByName(string(i))
+		rid, _ = rd.ChildByName(strconv.Itoa(int(i)))
 	}
 	return m, nil
 }

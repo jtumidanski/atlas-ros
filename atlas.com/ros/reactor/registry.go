@@ -75,7 +75,7 @@ func (r *registry) getMapLock(key MapKey) *sync.Mutex {
 	}
 }
 
-func (r *registry) Create(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state byte, x int16, y int16, delay uint32, direction byte, statistics statistics.Model) Model {
+func (r *registry) Create(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state int8, x int16, y int16, delay uint32, direction byte, statistics statistics.Model) Model {
 	r.lock.Lock()
 	uid := r.getNextUniqueId()
 
@@ -109,6 +109,21 @@ func (r *registry) Create(worldId byte, channelId byte, mapId uint32, reactorId 
 	return *m
 }
 
+func (r *registry) Update(id uint32, modifiers ...Modifier) (*Model, error) {
+	r.lock.Lock()
+	if val, ok := r.reactors[id]; ok {
+		r.lock.Unlock()
+		for _, modifier := range modifiers {
+			modifier(val)
+		}
+		r.reactors[id] = val
+		return val, nil
+	} else {
+		r.lock.Unlock()
+		return nil, errors.New("unable to locate reactor")
+	}
+}
+
 func (r *registry) getNextUniqueId() uint32 {
 	ids := existingIds(r.reactors)
 
@@ -121,6 +136,27 @@ func (r *registry) getNextUniqueId() uint32 {
 		uniqueId = currentUniqueId
 	}
 	return uniqueId
+}
+
+func (r *registry) Destroy(id uint32) {
+	r.lock.Lock()
+	val, ok := r.reactors[id]
+	if !ok {
+		return
+	}
+	delete(r.reactors, id)
+
+	r.lock.Unlock()
+
+	mk := MapKey{val.WorldId(), val.ChannelId(), val.MapId()}
+	r.getMapLock(mk).Lock()
+	if _, ok := r.mapReactors[mk]; ok {
+		index := indexOf(id, r.mapReactors[mk])
+		if index >= 0 && index < len(r.mapReactors[mk]) {
+			r.mapReactors[mk] = remove(r.mapReactors[mk], index)
+		}
+	}
+	r.getMapLock(mk).Unlock()
 }
 
 func existingIds(existing map[uint32]*Model) []uint32 {
@@ -138,4 +174,18 @@ func contains(ids []uint32, id uint32) bool {
 		}
 	}
 	return false
+}
+
+func indexOf(uniqueId uint32, data []uint32) int {
+	for k, v := range data {
+		if uniqueId == v {
+			return k
+		}
+	}
+	return -1 //not found.
+}
+
+func remove(s []uint32, i int) []uint32 {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }

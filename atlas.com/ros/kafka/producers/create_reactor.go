@@ -8,16 +8,16 @@ type createReactorCommand struct {
 	MapId     uint32 `json:"map_id"`
 	ReactorId uint32 `json:"reactor_id"`
 	Name      string `json:"name"`
-	State     byte   `json:"state"`
+	State     int8   `json:"state"`
 	X         int16  `json:"x"`
 	Y         int16  `json:"y"`
 	Delay     uint32 `json:"delay"`
 	Direction byte   `json:"direction"`
 }
 
-func CreateReactor(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state byte, x int16, y int16, delay uint32, direction byte) {
+func CreateReactor(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) {
 	producer := ProduceEvent(l, "TOPIC_CREATE_REACTOR_COMMAND")
-	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state byte, x int16, y int16, delay uint32, direction byte) {
+	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) {
 		command := &createReactorCommand{
 			WorldId:   worldId,
 			ChannelId: channelId,

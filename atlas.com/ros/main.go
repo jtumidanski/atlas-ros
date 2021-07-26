@@ -5,6 +5,8 @@ import (
 	"atlas-ros/kafka/consumers"
 	"atlas-ros/logger"
 	"atlas-ros/reactor/drop"
+	"atlas-ros/reactor/script/initializer"
+	"atlas-ros/reactor/script/registry"
 	"atlas-ros/rest"
 	"atlas-ros/wz"
 	"context"
@@ -27,6 +29,8 @@ func main() {
 	db := database.ConnectToDatabase(l)
 
 	drop.Initialize(l, db)
+
+	registry.GetRegistry().AddScripts(initializer.CreateScripts)
 
 	consumers.CreateEventConsumers(l, db, ctx, wg)
 
