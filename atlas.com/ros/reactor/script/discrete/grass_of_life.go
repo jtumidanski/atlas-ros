@@ -5,13 +5,14 @@ import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func NewGrassOfLife() script.Script {
 	return generic.NewReactor(reactor.GrassOfLife, generic.SetAct(GrassOfLifeAct))
 }
 
-func GrassOfLifeAct(l logrus.FieldLogger, c script.Context) {
+func GrassOfLifeAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	//rm.dropItems()
 	//
 	//EventInstanceManager eim = rm.getEventInstance()

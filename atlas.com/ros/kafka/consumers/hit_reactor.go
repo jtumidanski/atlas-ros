@@ -26,7 +26,7 @@ func EmptyHitReactorCommand() handler.EmptyEventCreator {
 func HandleHitReactorCommand(db *gorm.DB) handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if command, ok := e.(*hitReactorCommand); ok {
-			err := reactor.Hit(l)(command.Id, command.CharacterId, command.Stance, command.SkillId)
+			err := reactor.Hit(l, db)(command.Id, command.CharacterId, command.Stance, command.SkillId)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to hit reactor %d in map %d by command.", command.Id, command.MapId)
 			}

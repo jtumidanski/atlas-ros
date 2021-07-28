@@ -10,7 +10,7 @@ type entity struct {
 	ID        uint32 `gorm:"primaryKey;autoIncrement;not null"`
 	ReactorId uint32 `gorm:"not null"`
 	ItemId    uint32 `gorm:"not null"`
-	QuestId   uint32 `gorm:"not null"`
+	QuestId   int32  `gorm:"not null"`
 	Chance    uint32 `gorm:"not null"`
 }
 

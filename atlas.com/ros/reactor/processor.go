@@ -6,6 +6,7 @@ import (
 	registry2 "atlas-ros/reactor/script/registry"
 	"atlas-ros/reactor/statistics"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -34,7 +35,7 @@ func Get(_ logrus.FieldLogger) func(id uint32) (*Model, error) {
 	}
 }
 
-func Hit(l logrus.FieldLogger) func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
+func Hit(l logrus.FieldLogger, db *gorm.DB) func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
 	return func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
 		r, err := Get(l)(id)
 		if err != nil {
@@ -45,7 +46,7 @@ func Hit(l logrus.FieldLogger) func(id uint32, characterId uint32, stance uint16
 		}
 		clearTimeout(l)(r)
 
-		err = performScriptAction(l)(characterId, script.InvokeHit)(r)
+		err = performScriptAction(l, db)(characterId, script.InvokeHit)(r)
 		if err != nil {
 			return err
 		}
@@ -73,14 +74,14 @@ func Hit(l logrus.FieldLogger) func(id uint32, characterId uint32, stance uint16
 						} else {
 							trigger(l)(r, stance)
 						}
-						err = performScriptAction(l)(characterId, script.InvokeAct)(r)
+						err = performScriptAction(l, db)(characterId, script.InvokeAct)(r)
 						if err != nil {
 							return err
 						}
 					} else {
 						trigger(l)(r, stance)
 						if r.State() == r.NextState(i) {
-							err = performScriptAction(l)(characterId, script.InvokeAct)(r)
+							err = performScriptAction(l, db)(characterId, script.InvokeAct)(r)
 							if err != nil {
 								return err
 							}
@@ -103,7 +104,7 @@ func Hit(l logrus.FieldLogger) func(id uint32, characterId uint32, stance uint16
 			}
 			trigger(l)(r, stance)
 			if r.Classification() != 9980000 && r.Classification() != 9980001 {
-				err = performScriptAction(l)(characterId, script.InvokeAct)(r)
+				err = performScriptAction(l, db)(characterId, script.InvokeAct)(r)
 				if err != nil {
 					return err
 				}
@@ -179,15 +180,15 @@ func searchItem(l logrus.FieldLogger) func(r *Model) {
 	}
 }
 
-func Touch(l logrus.FieldLogger) func(id uint32, characterId uint32) error {
+func Touch(l logrus.FieldLogger, db *gorm.DB) func(id uint32, characterId uint32) error {
 	return func(id uint32, characterId uint32) error {
-		return For(id, performScriptAction(l)(characterId, script.InvokeTouch))
+		return For(id, performScriptAction(l, db)(characterId, script.InvokeTouch))
 	}
 }
 
-func Release(l logrus.FieldLogger) func(id uint32, characterId uint32) error {
+func Release(l logrus.FieldLogger, db *gorm.DB) func(id uint32, characterId uint32) error {
 	return func(id uint32, characterId uint32) error {
-		return For(id, performScriptAction(l)(characterId, script.InvokeRelease))
+		return For(id, performScriptAction(l, db)(characterId, script.InvokeRelease))
 	}
 }
 
@@ -205,7 +206,7 @@ type Operator func(*Model) error
 
 type CharacterAction func(uint32, script.Action) Operator
 
-func performScriptAction(l logrus.FieldLogger) CharacterAction {
+func performScriptAction(l logrus.FieldLogger, db *gorm.DB) CharacterAction {
 	return func(characterId uint32, action script.Action) Operator {
 		return func(m *Model) error {
 			c := script.Context{WorldId: m.WorldId(), ChannelId: m.ChannelId(), MapId: m.MapId(), CharacterId: characterId, ReactorClassification: m.Classification(), ReactorId: m.Id()}
@@ -213,7 +214,7 @@ func performScriptAction(l logrus.FieldLogger) CharacterAction {
 			if err != nil {
 				return err
 			}
-			action(l)(c)(*s)
+			action(l, db)(c)(*s)
 			return nil
 		}
 	}

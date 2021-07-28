@@ -24,7 +24,7 @@ func EmptyReleaseReactorCommand() handler.EmptyEventCreator {
 func HandleReleaseReactorCommand(db *gorm.DB) handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if command, ok := e.(*releaseReactorCommand); ok {
-			err := reactor.Release(l)(command.Id, command.CharacterId)
+			err := reactor.Release(l, db)(command.Id, command.CharacterId)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to release reactor %d in map %d by command.", command.Id, command.MapId)
 			}

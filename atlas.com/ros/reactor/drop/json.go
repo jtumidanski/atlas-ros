@@ -7,6 +7,6 @@ type JSONObject struct {
 
 type dropChance struct {
 	ItemId  uint32 `json:"item_id"`
-	QuestId uint32 `json:"quest_id"`
+	QuestId int32  `json:"quest_id"`
 	Chance  uint32 `json:"chance"`
 }

@@ -26,7 +26,7 @@ func EmptyCreateReactorCommand() handler.EmptyEventCreator {
 	}
 }
 
-func HandleCreateReactorCommand(db *gorm.DB) handler.EventHandler {
+func HandleCreateReactorCommand(_ *gorm.DB) handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if command, ok := e.(*createReactorCommand); ok {
 			_, err := reactor.Create(l)(command.WorldId, command.ChannelId, command.MapId, command.ReactorClassification, command.Name, command.State, command.X, command.Y, command.Delay, command.Direction)

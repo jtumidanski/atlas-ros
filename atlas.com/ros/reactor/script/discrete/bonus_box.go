@@ -5,13 +5,14 @@ import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func NewBonusBox() script.Script {
 	return generic.NewReactor(reactor.BonusBox, generic.SetAct(BonusBoxAct))
 }
 
-func BonusBoxAct(l logrus.FieldLogger, c script.Context) {
+func BonusBoxAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	//rm.dropItems(true, 1, 100, 400, 15)
 	//
 	//EventInstanceManager eim = rm.getEventInstance()

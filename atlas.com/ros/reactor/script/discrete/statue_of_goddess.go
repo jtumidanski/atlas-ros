@@ -5,13 +5,14 @@ import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func NewStatueOfGoddess() script.Script {
 	return generic.NewReactor(reactor.StatueOfGoddess, generic.SetAct(StatueOfGoddessAct))
 }
 
-func StatueOfGoddessAct(l logrus.FieldLogger, c script.Context) {
+func StatueOfGoddessAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	//rm.spawnNpc(2013002)
 	//rm.getEventInstance().clearPQ()
 	//

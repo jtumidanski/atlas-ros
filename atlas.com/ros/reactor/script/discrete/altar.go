@@ -5,13 +5,14 @@ import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func NewAltar() script.Script {
 	return generic.NewReactor(reactor.Altar, generic.SetAct(AltarAct))
 }
 
-func AltarAct(l logrus.FieldLogger, c script.Context) {
+func AltarAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	//if (rm.getPlayer().getEventInstance() != null) {
 	//	rm.getPlayer().getEventInstance().setProperty("summoned", "true")
 	//	rm.getPlayer().getEventInstance().setProperty("canEnter", "false")

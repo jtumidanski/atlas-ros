@@ -1,9 +1,11 @@
 package generic
 
 import (
+	"atlas-ros/character"
 	"atlas-ros/drop"
 	"atlas-ros/reactor/script"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type config struct {
@@ -24,20 +26,20 @@ func (r reactor) ReactorClassification() uint32 {
 	return r.id
 }
 
-func (r reactor) Act(l logrus.FieldLogger, c script.Context) {
-	r.c.act(l, c)
+func (r reactor) Act(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	r.c.act(l, db, c)
 }
 
-func (r reactor) Hit(l logrus.FieldLogger, c script.Context) {
-	r.c.hit(l, c)
+func (r reactor) Hit(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	r.c.hit(l, db, c)
 }
 
-func (r reactor) Touch(l logrus.FieldLogger, c script.Context) {
-	r.c.touch(l, c)
+func (r reactor) Touch(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	r.c.touch(l, db, c)
 }
 
-func (r reactor) Release(l logrus.FieldLogger, c script.Context) {
-	r.c.release(l, c)
+func (r reactor) Release(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	r.c.release(l, db, c)
 }
 
 func NewNoOpReactor(id uint32) script.Script {
@@ -97,34 +99,35 @@ func SetHit(hitFunc script.HitFunc) Configurator {
 }
 
 func SimpleDrop(meso bool, mesoChance uint32, minMeso uint32, maxMeso uint32, minItems uint32) script.ActFunc {
-	return func(l logrus.FieldLogger, c script.Context) {
-		drop.Produce(l)(c.WorldId, c.ChannelId, c.MapId, c.ReactorClassification, c.CharacterId, meso, mesoChance, minMeso, maxMeso, minItems)
+	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+		drop.Produce(l, db)(c.WorldId, c.ChannelId, c.MapId, c.ReactorId, c.CharacterId, meso, mesoChance, minMeso, maxMeso, minItems)
 	}
 }
 
 func SimpleSpray(meso bool, mesoChance uint32, minMeso uint32, maxMeso uint32, minItems uint32) script.ActFunc {
-	return func(l logrus.FieldLogger, c script.Context) {
-
+	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+		//TODO HeavenMS there is no difference between this, and SimpleDrop
+		drop.Produce(l, db)(c.WorldId, c.ChannelId, c.MapId, c.ReactorId, c.CharacterId, meso, mesoChance, minMeso, maxMeso, minItems)
 	}
 }
 
 func SimpleWarpById(mapId uint32, portalId uint32) script.ActFunc {
-	return func(l logrus.FieldLogger, c script.Context) {
-		//TODO
+	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+		character.WarpById(l)(c.WorldId, c.ChannelId, c.CharacterId, mapId, portalId)
 	}
 }
 
 func SimpleWarpByName(mapId uint32, portalName string) script.ActFunc {
-	return func(l logrus.FieldLogger, c script.Context) {
-		//TODO
+	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+		character.WarpByName(l)(c.WorldId, c.ChannelId, c.CharacterId, mapId, portalName)
 	}
 }
 
 func SimpleSpawnMonster(monsterId uint32) script.ActFunc {
-	return func(l logrus.FieldLogger, c script.Context) {
-
+	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+		//TODO
 	}
 }
 
-func NoOp(_ logrus.FieldLogger, _ script.Context) {
+func NoOp(_ logrus.FieldLogger, _ *gorm.DB, _ script.Context) {
 }

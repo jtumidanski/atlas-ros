@@ -24,7 +24,7 @@ func EmptyTouchReactorCommand() handler.EmptyEventCreator {
 func HandleTouchReactorCommand(db *gorm.DB) handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if command, ok := e.(*touchReactorCommand); ok {
-			err := reactor.Touch(l)(command.Id, command.CharacterId)
+			err := reactor.Touch(l, db)(command.Id, command.CharacterId)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to touch reactor %d in map %d by command.", command.Id, command.MapId)
 			}

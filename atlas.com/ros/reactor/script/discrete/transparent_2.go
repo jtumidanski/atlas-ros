@@ -5,13 +5,14 @@ import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func NewTransparent2() script.Script {
 	return generic.NewReactor(reactor.Transparent2, generic.SetAct(Transparent2Act))
 }
 
-func Transparent2Act(l logrus.FieldLogger, c script.Context) {
+func Transparent2Act(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	//if (rm.getEventInstance().getIntProperty("statusStg2") == -1) {
 	//	int rnd = Math.floor(Math.random() * 14).intValue()
 	//

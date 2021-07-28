@@ -2,7 +2,7 @@ package drop
 
 import "gorm.io/gorm"
 
-func create(db *gorm.DB, reactorId uint32, itemId uint32, questId uint32, chance uint32) error {
+func create(db *gorm.DB, reactorId uint32, itemId uint32, questId int32, chance uint32) error {
 	a := &entity{
 		ReactorId: reactorId,
 		ItemId:    itemId,

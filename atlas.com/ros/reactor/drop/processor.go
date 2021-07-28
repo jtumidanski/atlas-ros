@@ -37,3 +37,14 @@ func Initialize(l logrus.FieldLogger, db *gorm.DB) {
 		l.WithError(err).Errorf("Unable to initialize reactor drop database.")
 	}
 }
+
+func GetByClassification(l logrus.FieldLogger, db *gorm.DB) func(classification uint32) []*Model {
+	return func(classification uint32) []*Model {
+		results, err := getByClassification(db)(classification)
+		if err != nil {
+			l.WithError(err).Warnf("Unable to retrieve drops for classification %d, proceeding with none.", classification)
+			return make([]*Model, 0)
+		}
+		return results
+	}
+}

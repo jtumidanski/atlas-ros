@@ -5,13 +5,14 @@ import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 func NewGoddessFlowerPot() script.Script {
 	return generic.NewReactor(reactor.GoddessFlowerPot, generic.SetAct(GoddessFlowerPotAct))
 }
 
-func GoddessFlowerPotAct(l logrus.FieldLogger, c script.Context) {
+func GoddessFlowerPotAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	//if (rm.getMap().getSummonState()) {
 	//	int count = rm.getEventInstance().getIntProperty("statusStg7_c")
 	//
