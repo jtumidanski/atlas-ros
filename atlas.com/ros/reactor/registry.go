@@ -16,7 +16,7 @@ type registry struct {
 var once sync.Once
 var reg *registry
 
-var runningUniqueId = uint32(1000000001)
+var runningId = uint32(1000000001)
 
 type MapKey struct {
 	worldId   byte
@@ -75,35 +75,35 @@ func (r *registry) getMapLock(key MapKey) *sync.Mutex {
 	}
 }
 
-func (r *registry) Create(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state int8, x int16, y int16, delay uint32, direction byte, statistics statistics.Model) Model {
+func (r *registry) Create(worldId byte, channelId byte, mapId uint32, classification uint32, name string, state int8, x int16, y int16, delay uint32, direction byte, statistics statistics.Model) Model {
 	r.lock.Lock()
-	uid := r.getNextUniqueId()
+	id := r.getNextId()
 
 	m := &Model{
-		uniqueId:   uid,
-		worldId:    worldId,
-		channelId:  channelId,
-		mapId:      mapId,
-		id:         reactorId,
-		name:       name,
-		statistics: statistics,
-		state:      state,
-		delay:      delay,
-		direction:  direction,
-		x:          x,
-		y:          y,
-		alive:      true,
+		id:             id,
+		worldId:        worldId,
+		channelId:      channelId,
+		mapId:          mapId,
+		classification: classification,
+		name:           name,
+		statistics:     statistics,
+		state:          state,
+		delay:          delay,
+		direction:      direction,
+		x:              x,
+		y:              y,
+		alive:          true,
 	}
-	r.reactors[uid] = m
+	r.reactors[id] = m
 
 	r.lock.Unlock()
 
 	mk := MapKey{worldId, channelId, mapId}
 	r.getMapLock(mk).Lock()
 	if om, ok := r.mapReactors[mk]; ok {
-		r.mapReactors[mk] = append(om, m.UniqueId())
+		r.mapReactors[mk] = append(om, m.Id())
 	} else {
-		r.mapReactors[mk] = append([]uint32{}, m.UniqueId())
+		r.mapReactors[mk] = append([]uint32{}, m.Id())
 	}
 	r.getMapLock(mk).Unlock()
 	return *m
@@ -124,18 +124,18 @@ func (r *registry) Update(id uint32, modifiers ...Modifier) (*Model, error) {
 	}
 }
 
-func (r *registry) getNextUniqueId() uint32 {
+func (r *registry) getNextId() uint32 {
 	ids := existingIds(r.reactors)
 
-	var currentUniqueId = runningUniqueId
-	for contains(ids, currentUniqueId) {
-		currentUniqueId = currentUniqueId + 1
-		if currentUniqueId > 2000000000 {
-			currentUniqueId = 1000000001
+	var currentId = runningId
+	for contains(ids, currentId) {
+		currentId = currentId + 1
+		if currentId > 2000000000 {
+			currentId = 1000000001
 		}
-		runningUniqueId = currentUniqueId
+		runningId = currentId
 	}
-	return runningUniqueId
+	return runningId
 }
 
 func (r *registry) Destroy(id uint32) {
@@ -162,7 +162,7 @@ func (r *registry) Destroy(id uint32) {
 func existingIds(existing map[uint32]*Model) []uint32 {
 	var ids []uint32
 	for _, x := range existing {
-		ids = append(ids, x.UniqueId())
+		ids = append(ids, x.Id())
 	}
 	return ids
 }
@@ -176,9 +176,9 @@ func contains(ids []uint32, id uint32) bool {
 	return false
 }
 
-func indexOf(uniqueId uint32, data []uint32) int {
+func indexOf(id uint32, data []uint32) int {
 	for k, v := range data {
-		if uniqueId == v {
+		if id == v {
 			return k
 		}
 	}

@@ -28,12 +28,12 @@ func initRegistry() *Registry {
 
 func (r *Registry) AddScripts(provider func() []script.Script) {
 	for _, s := range provider() {
-		r.registry[s.ReactorId()] = s
+		r.registry[s.ReactorClassification()] = s
 	}
 }
 
-func (r *Registry) GetScript(reactorId uint32) (*script.Script, error) {
-	if val, ok := r.registry[reactorId]; ok {
+func (r *Registry) GetScript(reactorClassification uint32) (*script.Script, error) {
+	if val, ok := r.registry[reactorClassification]; ok {
 		return &val, nil
 	}
 	return nil, errors.New("unable to locate script")

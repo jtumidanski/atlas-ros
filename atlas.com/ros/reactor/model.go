@@ -3,11 +3,11 @@ package reactor
 import "atlas-ros/reactor/statistics"
 
 type Model struct {
-	uniqueId       uint32
+	id             uint32
 	worldId        byte
 	channelId      byte
 	mapId          uint32
-	id             uint32
+	classification uint32
 	name           string
 	statistics     statistics.Model
 	state          int8
@@ -22,12 +22,12 @@ type Model struct {
 	delayedRespawn bool
 }
 
-func (m Model) UniqueId() uint32 {
-	return m.uniqueId
-}
-
 func (m Model) Id() uint32 {
 	return m.id
+}
+
+func (m Model) Classification() uint32 {
+	return m.classification
 }
 
 func (m Model) Name() string {

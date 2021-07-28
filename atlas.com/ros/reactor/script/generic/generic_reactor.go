@@ -20,7 +20,7 @@ type reactor struct {
 	c  config
 }
 
-func (r reactor) ReactorId() uint32 {
+func (r reactor) ReactorClassification() uint32 {
 	return r.id
 }
 
@@ -98,7 +98,7 @@ func SetHit(hitFunc script.HitFunc) Configurator {
 
 func SimpleDrop(meso bool, mesoChance uint32, minMeso uint32, maxMeso uint32, minItems uint32) script.ActFunc {
 	return func(l logrus.FieldLogger, c script.Context) {
-		drop.Produce(l)(c.WorldId, c.ChannelId, c.MapId, c.ReactorId, c.CharacterId, meso, mesoChance, minMeso, maxMeso, minItems)
+		drop.Produce(l)(c.WorldId, c.ChannelId, c.MapId, c.ReactorClassification, c.CharacterId, meso, mesoChance, minMeso, maxMeso, minItems)
 	}
 }
 

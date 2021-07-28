@@ -58,7 +58,7 @@ func HandleCreateReactor(l logrus.FieldLogger, _ *gorm.DB, worldId byte, channel
 			return
 		}
 		attr := li.Data.Attributes
-		producers.CreateReactor(l)(worldId, channelId, mapId, attr.Id, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
+		producers.CreateReactor(l)(worldId, channelId, mapId, attr.Classification, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
 		w.WriteHeader(http.StatusAccepted)
 	}
 }

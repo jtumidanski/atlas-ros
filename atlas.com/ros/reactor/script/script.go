@@ -3,12 +3,12 @@ package script
 import "github.com/sirupsen/logrus"
 
 type Context struct {
-	WorldId         byte
-	ChannelId       byte
-	MapId           uint32
-	CharacterId     uint32
-	ReactorId       uint32
-	ReactorUniqueId uint32
+	WorldId               byte
+	ChannelId             byte
+	MapId                 uint32
+	CharacterId           uint32
+	ReactorId             uint32
+	ReactorClassification uint32
 }
 
 type ActFunc func(l logrus.FieldLogger, c Context)
@@ -20,7 +20,7 @@ type TouchFunc func(l logrus.FieldLogger, c Context)
 type ReleaseFunc func(l logrus.FieldLogger, c Context)
 
 type Script interface {
-	ReactorId() uint32
+	ReactorClassification() uint32
 
 	Act(l logrus.FieldLogger, c Context)
 

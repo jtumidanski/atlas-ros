@@ -8,13 +8,13 @@ import (
 )
 
 type hitReactorCommand struct {
-	WorldId           byte   `json:"world_id"`
-	ChannelId         byte   `json:"channel_id"`
-	MapId             uint32 `json:"map_id"`
-	UniqueId          uint32 `json:"unique_id"`
-	CharacterId       uint32 `json:"character_id"`
-	Stance            uint16 `json:"stance"`
-	SkillId           uint32 `json:"skill_id"`
+	WorldId     byte   `json:"world_id"`
+	ChannelId   byte   `json:"channel_id"`
+	MapId       uint32 `json:"map_id"`
+	CharacterId uint32 `json:"character_id"`
+	Id          uint32 `json:"id"`
+	Stance      uint16 `json:"stance"`
+	SkillId     uint32 `json:"skill_id"`
 }
 
 func EmptyHitReactorCommand() handler.EmptyEventCreator {
@@ -26,9 +26,9 @@ func EmptyHitReactorCommand() handler.EmptyEventCreator {
 func HandleHitReactorCommand(db *gorm.DB) handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if command, ok := e.(*hitReactorCommand); ok {
-			err := reactor.Hit(l)(command.CharacterId, command.UniqueId, command.Stance, command.SkillId)
+			err := reactor.Hit(l)(command.Id, command.CharacterId, command.Stance, command.SkillId)
 			if err != nil {
-				l.WithError(err).Errorf("Unable to hit reactor %d in map %d by command.", command.UniqueId, command.MapId)
+				l.WithError(err).Errorf("Unable to hit reactor %d in map %d by command.", command.Id, command.MapId)
 			}
 		} else {
 			l.Errorf("Unable to cast command provided to handler")

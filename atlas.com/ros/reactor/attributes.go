@@ -21,7 +21,7 @@ type DataBody struct {
 }
 
 type Attributes struct {
-	Id              uint32 `json:"id"`
+	Classification  uint32 `json:"classification"`
 	Name            string `json:"name"`
 	Type            int32  `json:"type"`
 	State           int8   `json:"state"`
@@ -34,10 +34,10 @@ type Attributes struct {
 
 func MakeReactorBody(r Model) DataBody {
 	return DataBody{
-		Id:   strconv.Itoa(int(r.UniqueId())),
+		Id:   strconv.Itoa(int(r.Id())),
 		Type: "reactor",
 		Attributes: Attributes{
-			Id:              r.Id(),
+			Classification:  r.Classification(),
 			Name:            r.Name(),
 			Type:            r.Type(),
 			State:           r.State(),

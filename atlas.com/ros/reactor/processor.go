@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func Create(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) (*Model, error) {
+func Create(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, classification uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) (*Model, error) {
 	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) (*Model, error) {
 		s, err := statistics.GetCache().GetFile(reactorId)
 		if err != nil {
@@ -17,7 +17,7 @@ func Create(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint3
 			return nil, err
 		}
 		m := GetRegistry().Create(worldId, channelId, mapId, reactorId, name, state, x, y, delay, direction, *s)
-		producers.Created(l)(worldId, channelId, mapId, m.UniqueId())
+		producers.Created(l)(worldId, channelId, mapId, m.Id())
 		return &m, nil
 	}
 }
@@ -28,15 +28,15 @@ func GetInMap(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uin
 	}
 }
 
-func Get(_ logrus.FieldLogger) func(uniqueId uint32) (*Model, error) {
-	return func(uniqueId uint32) (*Model, error) {
-		return GetRegistry().Get(uniqueId)
+func Get(_ logrus.FieldLogger) func(id uint32) (*Model, error) {
+	return func(id uint32) (*Model, error) {
+		return GetRegistry().Get(id)
 	}
 }
 
-func Hit(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32, stance uint16, skillId uint32) error {
-	return func(uniqueId uint32, characterId uint32, stance uint16, skillId uint32) error {
-		r, err := Get(l)(uniqueId)
+func Hit(l logrus.FieldLogger) func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
+	return func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
+		r, err := Get(l)(id)
 		if err != nil {
 			return err
 		}
@@ -59,7 +59,7 @@ func Hit(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32, stance 
 							continue
 						}
 					}
-					r, err = GetRegistry().Update(uniqueId, advanceState(i))
+					r, err = GetRegistry().Update(id, advanceState(i))
 					if err != nil {
 						return err
 					}
@@ -85,7 +85,7 @@ func Hit(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32, stance 
 								return err
 							}
 						}
-						r, err = GetRegistry().Update(uniqueId, shouldCollect(true))
+						r, err = GetRegistry().Update(id, shouldCollect(true))
 						if err != nil {
 							return err
 						}
@@ -97,12 +97,12 @@ func Hit(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32, stance 
 				}
 			}
 		} else {
-			r, err = GetRegistry().Update(uniqueId, incrementState(), shouldCollect(true))
+			r, err = GetRegistry().Update(id, incrementState(), shouldCollect(true))
 			if err != nil {
 				return err
 			}
 			trigger(l)(r, stance)
-			if r.Id() != 9980000 && r.Id() != 9980001 {
+			if r.Classification() != 9980000 && r.Classification() != 9980001 {
 				err = performScriptAction(l)(characterId, script.InvokeAct)(r)
 				if err != nil {
 					return err
@@ -119,15 +119,15 @@ func Hit(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32, stance 
 
 func trigger(l logrus.FieldLogger) func(r *Model, stance uint16) {
 	return func(r *Model, stance uint16) {
-		producers.Triggered(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.UniqueId(), stance)
+		producers.Triggered(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.Id(), stance)
 	}
 }
 
 func destroy(l logrus.FieldLogger) func(r *Model) {
 	return func(r *Model) {
-		GetRegistry().Destroy(r.UniqueId())
+		GetRegistry().Destroy(r.Id())
 		clearTimeout(l)(r)
-		producers.Destroyed(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.UniqueId())
+		producers.Destroyed(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.Id())
 		go respawn(l)(r)
 	}
 }
@@ -135,16 +135,16 @@ func destroy(l logrus.FieldLogger) func(r *Model) {
 func respawn(l logrus.FieldLogger) func(r *Model) {
 	return func(r *Model) {
 		time.Sleep(time.Duration(r.Delay()) * time.Second)
-		_, err := Create(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.Id(), r.Name(), 0, r.X(), r.Y(), r.Delay(), r.FacingDirection())
+		_, err := Create(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.Classification(), r.Name(), 0, r.X(), r.Y(), r.Delay(), r.FacingDirection())
 		if err != nil {
-			l.WithError(err).Errorf("Unable to respawn reactor %d at location %d,%d in map %d.", r.Id(), r.X(), r.Y(), r.MapId())
+			l.WithError(err).Errorf("Unable to respawn reactor %d at location %d,%d in map %d.", r.Classification(), r.X(), r.Y(), r.MapId())
 		}
 	}
 }
 
 func clearTimeout(_ logrus.FieldLogger) func(r *Model) {
 	return func(r *Model) {
-		TimeoutRegistry().Cancel(r.UniqueId())
+		TimeoutRegistry().Cancel(r.Id())
 	}
 }
 
@@ -153,7 +153,7 @@ func refreshTimeout(l logrus.FieldLogger) func(r *Model) {
 		to := r.Timeout()
 		if to > -1 {
 			ns := r.TimeoutState()
-			TimeoutRegistry().Schedule(r.UniqueId(), tryForceHitReactor(l)(r.UniqueId(), ns), time.Duration(to)*time.Second)
+			TimeoutRegistry().Schedule(r.Id(), tryForceHitReactor(l)(r.Id(), ns), time.Duration(to)*time.Second)
 		}
 	}
 }
@@ -179,21 +179,21 @@ func searchItem(l logrus.FieldLogger) func(r *Model) {
 	}
 }
 
-func Touch(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32) error {
-	return func(uniqueId uint32, characterId uint32) error {
-		return For(uniqueId, performScriptAction(l)(characterId, script.InvokeTouch))
+func Touch(l logrus.FieldLogger) func(id uint32, characterId uint32) error {
+	return func(id uint32, characterId uint32) error {
+		return For(id, performScriptAction(l)(characterId, script.InvokeTouch))
 	}
 }
 
-func Release(l logrus.FieldLogger) func(uniqueId uint32, characterId uint32) error {
-	return func(uniqueId uint32, characterId uint32) error {
-		return For(uniqueId, performScriptAction(l)(characterId, script.InvokeRelease))
+func Release(l logrus.FieldLogger) func(id uint32, characterId uint32) error {
+	return func(id uint32, characterId uint32) error {
+		return For(id, performScriptAction(l)(characterId, script.InvokeRelease))
 	}
 }
 
 // For applies a Operator function on a reactor, given its id
-func For(uniqueId uint32, rf Operator) error {
-	r, err := GetRegistry().Get(uniqueId)
+func For(id uint32, rf Operator) error {
+	r, err := GetRegistry().Get(id)
 	if err != nil {
 		return err
 	}
@@ -208,8 +208,8 @@ type CharacterAction func(uint32, script.Action) Operator
 func performScriptAction(l logrus.FieldLogger) CharacterAction {
 	return func(characterId uint32, action script.Action) Operator {
 		return func(m *Model) error {
-			c := script.Context{WorldId: m.WorldId(), ChannelId: m.ChannelId(), MapId: m.MapId(), CharacterId: characterId, ReactorId: m.Id(), ReactorUniqueId: m.UniqueId()}
-			s, err := registry2.GetRegistry().GetScript(m.Id())
+			c := script.Context{WorldId: m.WorldId(), ChannelId: m.ChannelId(), MapId: m.MapId(), CharacterId: characterId, ReactorClassification: m.Classification(), ReactorId: m.Id()}
+			s, err := registry2.GetRegistry().GetScript(m.Classification())
 			if err != nil {
 				return err
 			}
