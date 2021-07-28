@@ -30,3 +30,37 @@ type Script interface {
 
 	Release(l logrus.FieldLogger, c Context)
 }
+
+type Action func(l logrus.FieldLogger) func(c Context) func(script Script)
+
+func InvokeAct(l logrus.FieldLogger) func(c Context) func(script Script) {
+	return func(c Context) func(script Script) {
+		return func(script Script) {
+			script.Act(l, c)
+		}
+	}
+}
+
+func InvokeHit(l logrus.FieldLogger) func(c Context) func(script Script) {
+	return func(c Context) func(script Script) {
+		return func(script Script) {
+			script.Hit(l, c)
+		}
+	}
+}
+
+func InvokeTouch(l logrus.FieldLogger) func(c Context) func(script Script) {
+	return func(c Context) func(script Script) {
+		return func(script Script) {
+			script.Touch(l, c)
+		}
+	}
+}
+
+func InvokeRelease(l logrus.FieldLogger) func(c Context) func(script Script) {
+	return func(c Context) func(script Script) {
+		return func(script Script) {
+			script.Release(l, c)
+		}
+	}
+}

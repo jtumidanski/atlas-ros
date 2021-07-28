@@ -91,11 +91,25 @@ func (m Model) MapId() uint32 {
 	return m.mapId
 }
 
+func (m Model) Timeout() int32 {
+	return m.statistics.Timeout(m.state)
+}
+
+func (m Model) TimeoutState() int8 {
+	return m.statistics.TimeoutState(m.state)
+}
+
 type Modifier func(m *Model)
 
 func incrementState() Modifier {
 	return func(m *Model) {
 		m.state++
+	}
+}
+
+func setState(state int8) Modifier {
+	return func(m *Model) {
+		m.state = state
 	}
 }
 

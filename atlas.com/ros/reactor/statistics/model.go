@@ -100,6 +100,23 @@ func (m Model) ActiveSkills(state int8, i byte) []uint32 {
 	return s.ActiveSkills()
 }
 
+func (m Model) Timeout(state int8) int32 {
+	if val, ok := m.timeoutInfo[state]; ok {
+		return val
+	}
+	return -1
+}
+
+func (m Model) TimeoutState(state int8) int8 {
+	if s, ok := m.stateInfo[state]; ok {
+		if len(s) <= 0 {
+			return -1
+		}
+		return s[len(s)-1].NextState()
+	}
+	return -1
+}
+
 type ReactorState struct {
 	theType      int32
 	reactorItem  *ReactorItem

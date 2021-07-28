@@ -8,10 +8,11 @@ import (
 )
 
 type touchReactorCommand struct {
-	WorldId   byte   `json:"world_id"`
-	ChannelId byte   `json:"channel_id"`
-	MapId     uint32 `json:"map_id"`
-	UniqueId  uint32 `json:"unique_id"`
+	WorldId     byte   `json:"world_id"`
+	ChannelId   byte   `json:"channel_id"`
+	MapId       uint32 `json:"map_id"`
+	UniqueId    uint32 `json:"unique_id"`
+	CharacterId uint32 `json:"character_id"`
 }
 
 func EmptyTouchReactorCommand() handler.EmptyEventCreator {
@@ -23,7 +24,7 @@ func EmptyTouchReactorCommand() handler.EmptyEventCreator {
 func HandleTouchReactorCommand(db *gorm.DB) handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if command, ok := e.(*touchReactorCommand); ok {
-			err := reactor.Touch(l)(command.UniqueId)
+			err := reactor.Touch(l)(command.UniqueId, command.CharacterId)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to touch reactor %d in map %d by command.", command.UniqueId, command.MapId)
 			}
