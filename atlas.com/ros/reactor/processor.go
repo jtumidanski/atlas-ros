@@ -55,6 +55,17 @@ func ByNameInMapProvider(worldId byte, channelId byte, mapId uint32, name string
 	}
 }
 
+func ByClassificationInMapProvider(worldId byte, channelId byte, mapId uint32, classification uint32) IdProvider {
+	return func() uint32 {
+		for _, rs := range GetRegistry().GetInMap(worldId, channelId, mapId) {
+			if classification == rs.Classification() {
+				return rs.Id()
+			}
+		}
+		return 0
+	}
+}
+
 func GetById(l logrus.FieldLogger) func(id uint32) (*Model, error) {
 	return func(id uint32) (*Model, error) {
 		return Get(l)(FixedIdProvider(id))
@@ -64,6 +75,12 @@ func GetById(l logrus.FieldLogger) func(id uint32) (*Model, error) {
 func GetByNameInMap(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, name string) (*Model, error) {
 	return func(worldId byte, channelId byte, mapId uint32, name string) (*Model, error) {
 		return Get(l)(ByNameInMapProvider(worldId, channelId, mapId, name))
+	}
+}
+
+func GetByClassificationInMap(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, classification uint32) (*Model, error) {
+	return func(worldId byte, channelId byte, mapId uint32, classification uint32) (*Model, error) {
+		return Get(l)(ByClassificationInMapProvider(worldId, channelId, mapId, classification))
 	}
 }
 
@@ -224,7 +241,7 @@ func Release(l logrus.FieldLogger, db *gorm.DB) func(id uint32, characterId uint
 	}
 }
 
-// For applies a Operator function on a reactor, given its id
+// For applies an Operator function on a reactor, given its id
 func For(id uint32, rf Operator) error {
 	r, err := GetRegistry().Get(id)
 	if err != nil {

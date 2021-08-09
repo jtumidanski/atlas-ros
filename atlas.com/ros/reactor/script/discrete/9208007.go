@@ -22,7 +22,7 @@ func New9208007() script.Script {
 		if r.State() == 4 {
 			maps := []uint32{990000400, 990000410, 990000420, 990000430, 990000431, 990000440}
 			for i := 0; i < len(maps); i++ {
-				generic.ShowClearEffectWithGate(false, maps[i])(l, db, c)
+				generic.ShowClearEffectWithGateAndMap(false, maps[i])(l, db, c)
 			}
 			generic.GainGuildPoints(20)
 		}

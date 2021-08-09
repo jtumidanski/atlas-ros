@@ -1,6 +1,7 @@
 package discrete
 
 import (
+	"atlas-ros/event"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
@@ -12,6 +13,14 @@ func NewRecord() script.Script {
 	return generic.NewReactor(reactor.Record, generic.SetAct(RecordAct))
 }
 
-func RecordAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	// rm.getEventInstance().setProperty("statusStg3", "0")
+func RecordAct(l logrus.FieldLogger, _ *gorm.DB, c script.Context) {
+	if !event.ParticipatingInEvent(l)(c.CharacterId) {
+		return
+	}
+
+	e, err := event.GetByParticipatingCharacter(l)(c.CharacterId)
+	if err != nil {
+		return
+	}
+	event.SetStringProperty(l)(e.Id(), "statusStg3", "0")
 }

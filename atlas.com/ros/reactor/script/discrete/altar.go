@@ -1,6 +1,7 @@
 package discrete
 
 import (
+	"atlas-ros/event"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
@@ -13,15 +14,20 @@ func NewAltar() script.Script {
 }
 
 func AltarAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//if (rm.getPlayer().getEventInstance() != null) {
-	//	rm.getPlayer().getEventInstance().setProperty("summoned", "true")
-	//	rm.getPlayer().getEventInstance().setProperty("canEnter", "false")
-	//}
-	//rm.changeMusic("Bgm06/FinalFight")
-	//rm.spawnFakeMonster(8800000)
-	//for (int i = 8800003; i < 8800011; i++) {
-	//	rm.spawnMonster(i)
-	//}
-	//rm.createMapMonitor(280030000, "ps00")
-	//MessageBroadcaster.getInstance().sendMapServerNotice(rm.getPlayer().getMap(), ServerNoticeType.PINK_TEXT, I18nMessage.from("ZAKUM_SUMMONED"))
+	if event.ParticipatingInEvent(l)(c.CharacterId) {
+		e, err := event.GetByParticipatingCharacter(l)(c.CharacterId)
+		if err != nil {
+			return
+		}
+		event.SetStringProperty(l)(e.Id(), "summoned", "true")
+		event.SetStringProperty(l)(e.Id(), "canEnter", "false")
+	}
+
+	generic.ChangeMusic("Bgm06/FinalFight")(l, db, c)
+	generic.SpawnFakeMonster(8800000)(l, db, c)
+	for i := uint32(8800003); i < 8800011; i++ {
+		generic.SpawnMonster(i)(l, db, c)
+	}
+	generic.CreateMapMonitor(280030000, "ps00")(l, db, c)
+	generic.MapPinkMessage("ZAKUM_SUMMONED")(l, db, c)
 }

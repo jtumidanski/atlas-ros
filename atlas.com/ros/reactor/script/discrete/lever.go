@@ -1,6 +1,7 @@
 package discrete
 
 import (
+	_map "atlas-ros/map"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
@@ -12,7 +13,11 @@ func NewLever() script.Script {
 	return generic.NewReactor(reactor.Lever, generic.SetAct(generic.NoOp), generic.SetHit(LeverHit))
 }
 
-func LeverHit(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//MapleMap map = rm.getMap()
-	//map.moveEnvironment("trap" + rm.getReactor().getName()[5], 1)
+func LeverHit(l logrus.FieldLogger, _ *gorm.DB, c script.Context) {
+	r, err := reactor.GetById(l)(c.ReactorId)
+	if err != nil {
+		return
+	}
+
+	_map.MoveEnvironment(l)(c.WorldId, c.ChannelId, c.MapId, "trap" + string([]rune(r.Name())[5]), 1)
 }

@@ -43,3 +43,9 @@ func SetSummonState(l logrus.FieldLogger) func(worldId byte, channelId byte, map
 
 	}
 }
+
+func SummonState(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) bool {
+	return func(worldId byte, channelId byte, mapId uint32) bool {
+		return false
+	}
+}

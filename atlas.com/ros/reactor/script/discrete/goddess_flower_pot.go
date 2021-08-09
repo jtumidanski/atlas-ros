@@ -1,11 +1,14 @@
 package discrete
 
 import (
+	"atlas-ros/event"
+	_map "atlas-ros/map"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"math/rand"
 )
 
 func NewGoddessFlowerPot() script.Script {
@@ -13,16 +16,26 @@ func NewGoddessFlowerPot() script.Script {
 }
 
 func GoddessFlowerPotAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//if (rm.getMap().getSummonState()) {
-	//	int count = rm.getEventInstance().getIntProperty("statusStg7_c")
-	//
-	//	if (count < 7) {
-	//		int nextCount = (count + 1)
-	//
-	//		rm.spawnMonster(Math.random() >= 0.6 ? 9300049 : 9300048)
-	//		rm.getEventInstance().setProperty("statusStg7_c", nextCount)
-	//	} else {
-	//		rm.spawnMonster(9300049)
-	//	}
-	//}
+	if !_map.SummonState(l)(c.WorldId, c.ChannelId, c.MapId) {
+		return
+	}
+	if !event.ParticipatingInEvent(l)(c.CharacterId) {
+		return
+	}
+	e, err := event.GetByParticipatingCharacter(l)(c.CharacterId)
+	if err != nil {
+		return
+	}
+	count := event.GetProperty(l)(e.Id(), "statusStg7_c")
+	if count < 7 {
+		monsterId := uint32(9300048)
+		if rand.Float64() >= 0.6 {
+			monsterId = 9300049
+		}
+		generic.SpawnMonster(monsterId)(l, db, c)
+		event.SetProperty(l)(e.Id(), "statusStg7_c", count+1)
+		return
+	}
+
+	generic.SpawnMonster(9300049)(l, db, c)
 }

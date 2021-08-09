@@ -1,6 +1,9 @@
 package event
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/sirupsen/logrus"
+	"time"
+)
 
 // IdProvider is a function which provides an event id
 type IdProvider func() uint32
@@ -88,5 +91,23 @@ func BlueMessageParticipants(l logrus.FieldLogger) func(provider IdProvider, mes
 func InvokeFunction(l logrus.FieldLogger) func(id uint32, name string) {
 	return func(id uint32, name string) {
 		
+	}
+}
+
+func ClearPartyQuest(l logrus.FieldLogger) func(id uint32) {
+	return func(id uint32) {
+
+	}
+}
+
+func GiveParticipantsExperience(l logrus.FieldLogger) func(id uint32, amount int16) {
+	return func(id uint32, amount int16) {
+
+	}
+}
+
+func StartTimer(l logrus.FieldLogger) func(id uint32, duration time.Duration) {
+	return func(id uint32, duration time.Duration) {
+
 	}
 }

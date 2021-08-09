@@ -1,6 +1,7 @@
 package discrete
 
 import (
+	"atlas-ros/event"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
@@ -13,8 +14,14 @@ func NewGrassOfLife() script.Script {
 }
 
 func GrassOfLifeAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//rm.dropItems()
-	//
-	//EventInstanceManager eim = rm.getEventInstance()
-	//eim.setProperty("statusStg7", "1")
+	generic.Drop(false, 0, 0, 0, 0)(l, db, c)
+	if !event.ParticipatingInEvent(l)(c.CharacterId) {
+		return
+	}
+
+	e, err := event.GetByParticipatingCharacter(l)(c.CharacterId)
+	if err != nil {
+		return
+	}
+	event.SetStringProperty(l)(e.Id(), "statusStg7", "1")
 }

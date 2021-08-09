@@ -1,6 +1,7 @@
 package discrete
 
 import (
+	_map "atlas-ros/map"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
@@ -13,8 +14,8 @@ func NewPapaPixieSummon() script.Script {
 }
 
 func PapaPixieSummonAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//rm.getMap().killAllMonsters()
-	//rm.getMap().allowSummonState(false)
-	//rm.spawnMonster(9300039, 260, 490)
-	//MessageBroadcaster.getInstance().sendMapServerNotice(rm.getPlayer().getMap(), ServerNoticeType.PINK_TEXT, I18nMessage.from("2001016_AS_THE_AIR"))
+	_map.KillAllMonsters(l)(c.WorldId, c.ChannelId, c.MapId)
+	_map.SetSummonState(l)(c.WorldId, c.ChannelId, c.MapId, false)
+	generic.SpawnMonsterAt(9300039, 260, 490)(l, db, c)
+	generic.MapPinkMessage("2001016_AS_THE_AIR")(l, db, c)
 }

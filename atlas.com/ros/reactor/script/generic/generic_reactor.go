@@ -240,6 +240,12 @@ func SpawnNPC(npcId uint32) func(l logrus.FieldLogger, db *gorm.DB, c script.Con
 	}
 }
 
+func SpawnNPCAt(npcId uint32, x int16, y int16) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+
+	}
+}
+
 func GainGuildPoints(amount int16) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 
@@ -295,7 +301,13 @@ func ShowClearEffect() func(l logrus.FieldLogger, db *gorm.DB, c script.Context)
 	}
 }
 
-func ShowClearEffectWithGate(hasGate bool, mapId uint32) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+func ShowClearEffectWithGate(hasGate bool) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+
+	}
+}
+
+func ShowClearEffectWithGateAndMap(hasGate bool, mapId uint32) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 
 	}

@@ -1,6 +1,7 @@
 package discrete
 
 import (
+	"atlas-ros/event"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
@@ -13,11 +14,17 @@ func NewBonusBox() script.Script {
 }
 
 func BonusBoxAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//rm.dropItems(true, 1, 100, 400, 15)
-	//
-	//EventInstanceManager eim = rm.getEventInstance()
-	//if (eim.getProperty("statusStgBonus") != "1") {
-	//	rm.spawnNpc(2013002, new Point(46, 840))
-	//	eim.setProperty("statusStgBonus", "1")
-	//}
+	if !event.ParticipatingInEvent(l)(c.CharacterId) {
+		return
+	}
+	e, err := event.GetByParticipatingCharacter(l)(c.CharacterId)
+	if err != nil {
+		return
+	}
+
+	generic.Drop(true, 1, 100, 400, 15)(l, db, c)
+	if event.GetStringProperty(l)(e.Id(), "statusStgBonus") != "1" {
+		generic.SpawnNPCAt(2013002, 46, 840)(l, db, c)
+		event.SetStringProperty(l)(e.Id(), "statusStgBonus", "1")
+	}
 }

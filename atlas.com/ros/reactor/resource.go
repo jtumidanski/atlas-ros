@@ -33,7 +33,7 @@ func ParseId(l logrus.FieldLogger, db *gorm.DB, next IdHandler) http.HandlerFunc
 	}
 }
 
-func HandleGetReactor(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.HandlerFunc {
+func HandleGetReactor(l logrus.FieldLogger, _ *gorm.DB, reactorId uint32) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		r, err := GetById(l)(reactorId)
 		if err != nil {
@@ -52,25 +52,25 @@ func HandleGetReactor(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.
 	}
 }
 
-func HandleResetReactor(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.HandlerFunc {
+func HandleResetReactor(_ logrus.FieldLogger, _ *gorm.DB, _ uint32) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func HandleUpdateReactor(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.HandlerFunc {
+func HandleUpdateReactor(_ logrus.FieldLogger, _ *gorm.DB, _ uint32) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func HandleDestroyReactor(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.HandlerFunc {
+func HandleDestroyReactor(_ logrus.FieldLogger, _ *gorm.DB, _ uint32) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func HandleHitReactor(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.HandlerFunc {
+func HandleHitReactor(_ logrus.FieldLogger, _ *gorm.DB, _ uint32) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}

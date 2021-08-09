@@ -1,11 +1,13 @@
 package discrete
 
 import (
+	"atlas-ros/event"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"time"
 )
 
 func NewStatueOfGoddess() script.Script {
@@ -13,14 +15,18 @@ func NewStatueOfGoddess() script.Script {
 }
 
 func StatueOfGoddessAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//rm.spawnNpc(2013002)
-	//rm.getEventInstance().clearPQ()
-	//
-	//rm.getEventInstance().setProperty("statusStg8", "1")
-	//
-	//EventInstanceManager eim = rm.getEventInstance()
-	//eim.giveEventPlayersExp(3500)
-	//eim.showClearEffect(true)
-	//
-	//rm.getEventInstance().startEventTimer(5 * 60000) //bonus time
+	generic.SpawnNPC(2013002)(l, db, c)
+	if !event.ParticipatingInEvent(l)(c.CharacterId) {
+		return
+	}
+
+	e, err := event.GetByParticipatingCharacter(l)(c.CharacterId)
+	if err != nil {
+		return
+	}
+	event.ClearPartyQuest(l)(e.Id())
+	event.SetStringProperty(l)(e.Id(), "statusStg8", "1")
+	event.GiveParticipantsExperience(l)(e.Id(), 3500)
+	generic.ShowClearEffectWithGate(true)(l, db, c)
+	event.StartTimer(l)(e.Id(), 5 * time.Minute)
 }
