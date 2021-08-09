@@ -7,7 +7,7 @@ import (
 
 type timeoutRegistry struct {
 	timeouts map[uint32]chan bool
-	lock     sync.RWMutex
+	lock     sync.Mutex
 }
 
 var once2 sync.Once
@@ -17,7 +17,7 @@ func TimeoutRegistry() *timeoutRegistry {
 	once2.Do(func() {
 		tr = &timeoutRegistry{
 			timeouts: make(map[uint32]chan bool, 0),
-			lock:     sync.RWMutex{},
+			lock:     sync.Mutex{},
 		}
 	})
 	return tr

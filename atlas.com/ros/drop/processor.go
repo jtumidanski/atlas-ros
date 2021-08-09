@@ -14,7 +14,7 @@ import (
 
 func Produce(l logrus.FieldLogger, db *gorm.DB) func(worldId byte, channelId byte, mapId uint32, reactorId uint32, characterId uint32, meso bool, mesoChance uint32, minMeso uint32, maxMeso uint32, minItems uint32) {
 	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32, characterId uint32, meso bool, mesoChance uint32, minMeso uint32, maxMeso uint32, minItems uint32) {
-		r, err := reactor.Get(l)(reactorId)
+		r, err := reactor.GetById(l)(reactorId)
 		if err != nil {
 			l.WithError(err).Errorf("Unable to retrieve reactor to drop from.")
 			return

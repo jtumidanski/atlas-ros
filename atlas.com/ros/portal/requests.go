@@ -21,3 +21,12 @@ func requestByName(mapId uint32, portalName string) (*dataContainer, error) {
 	}
 	return ar, nil
 }
+
+func requestAll(mapId uint32) (*dataContainer, error) {
+	ar := &dataContainer{}
+	err := requests.Get(fmt.Sprintf(portalsResource, mapId), ar)
+	if err != nil {
+		return nil, err
+	}
+	return ar, nil
+}

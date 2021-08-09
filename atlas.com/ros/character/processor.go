@@ -37,3 +37,15 @@ func WarpByName(l logrus.FieldLogger) func(worldId byte, channelId byte, charact
 		WarpToPortal(l)(worldId, channelId, characterId, mapId, portal.ByNamePortalIdProvider(l)(mapId, portalName))
 	}
 }
+
+func WarpRandom(l logrus.FieldLogger) func(worldId byte, channelId byte, characterId uint32, mapId uint32) {
+	return func(worldId byte, channelId byte, characterId uint32, mapId uint32) {
+		WarpToPortal(l)(worldId, channelId, characterId, mapId, portal.RandomPortalIdProvider(l)(mapId))
+	}
+}
+
+func QuestActive(l logrus.FieldLogger) func(characterId uint32, questId uint32) bool {
+	return func(characterId uint32, questId uint32) bool {
+		return false
+	}
+}

@@ -29,15 +29,47 @@ func GetInMap(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uin
 	}
 }
 
-func Get(_ logrus.FieldLogger) func(id uint32) (*Model, error) {
-	return func(id uint32) (*Model, error) {
+type IdProvider func() uint32
+
+func Get(_ logrus.FieldLogger) func(provider IdProvider) (*Model, error) {
+	return func(provider IdProvider) (*Model, error) {
+		id := provider()
 		return GetRegistry().Get(id)
+	}
+}
+
+func FixedIdProvider(id uint32) IdProvider {
+	return func() uint32 {
+		return id
+	}
+}
+
+func ByNameInMapProvider(worldId byte, channelId byte, mapId uint32, name string) IdProvider {
+	return func() uint32 {
+		for _, rs := range GetRegistry().GetInMap(worldId, channelId, mapId) {
+			if name == rs.Name() {
+				return rs.Id()
+			}
+		}
+		return 0
+	}
+}
+
+func GetById(l logrus.FieldLogger) func(id uint32) (*Model, error) {
+	return func(id uint32) (*Model, error) {
+		return Get(l)(FixedIdProvider(id))
+	}
+}
+
+func GetByNameInMap(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, name string) (*Model, error) {
+	return func(worldId byte, channelId byte, mapId uint32, name string) (*Model, error) {
+		return Get(l)(ByNameInMapProvider(worldId, channelId, mapId, name))
 	}
 }
 
 func Hit(l logrus.FieldLogger, db *gorm.DB) func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
 	return func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
-		r, err := Get(l)(id)
+		r, err := GetById(l)(id)
 		if err != nil {
 			return err
 		}
@@ -154,12 +186,12 @@ func refreshTimeout(l logrus.FieldLogger) func(r *Model) {
 		to := r.Timeout()
 		if to > -1 {
 			ns := r.TimeoutState()
-			TimeoutRegistry().Schedule(r.Id(), tryForceHitReactor(l)(r.Id(), ns), time.Duration(to)*time.Second)
+			TimeoutRegistry().Schedule(r.Id(), TryForceHitReactor(l)(r.Id(), ns), time.Duration(to)*time.Second)
 		}
 	}
 }
 
-func tryForceHitReactor(l logrus.FieldLogger) func(reactorId uint32, newState int8) func() {
+func TryForceHitReactor(l logrus.FieldLogger) func(reactorId uint32, newState int8) func() {
 	return func(reactorId uint32, newState int8) func() {
 		return func() {
 			r, err := GetRegistry().Update(reactorId, setState(newState), shouldCollect(true))
@@ -217,5 +249,11 @@ func performScriptAction(l logrus.FieldLogger, db *gorm.DB) CharacterAction {
 			action(l, db)(c)(*s)
 			return nil
 		}
+	}
+}
+
+func IsRecentHitFromAttack(l logrus.FieldLogger) func(id uint32) bool {
+	return func(id uint32) bool {
+		return false
 	}
 }

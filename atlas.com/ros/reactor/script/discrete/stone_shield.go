@@ -16,8 +16,8 @@ func NewStoneShieldSeiramsShield() script.Script {
 
 func StoneShieldSeiramsShieldAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	if rand.Float64() > 0.7 {
-		generic.SimpleDrop(false, 0, 0, 0, 0)(l, db, c)
+		generic.Drop(false, 0, 0, 0, 0)(l, db, c)
 	} else {
-		generic.SimpleWarpById(_map.DungeonAnotherEntrance, 0)(l, db, c)
+		generic.WarpById(_map.DungeonAnotherEntrance, 0)(l, db, c)
 	}
 }
