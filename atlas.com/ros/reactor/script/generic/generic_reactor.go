@@ -343,7 +343,7 @@ func GiveEventParticipantsStageReward(stage uint32) func(l logrus.FieldLogger, d
 	}
 }
 
-func MapCharacterGainExperience(amount int16) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+func MapCharacterGainExperience(amount int32) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 
 	}
