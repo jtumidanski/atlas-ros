@@ -10,7 +10,7 @@ import (
 
 func Hit2612005() script.HitFunc {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-		r, err := reactor.GetById(l)(c.ReactorId)
+		r, err := reactor.GetById(c.ReactorId)
 		if err != nil {
 			return
 		}

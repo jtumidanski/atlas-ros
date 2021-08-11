@@ -4,6 +4,9 @@ import (
 	"atlas-ros/character"
 	"atlas-ros/drop"
 	"atlas-ros/event"
+	_map "atlas-ros/map"
+	"atlas-ros/monster"
+	reactor2 "atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -164,7 +167,12 @@ func WarpByName(mapId uint32, portalName string) func(l logrus.FieldLogger, db *
 
 func SpawnMonster(monsterId uint32) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-		//TODO
+		r, err := reactor2.GetById(c.ReactorId)
+		if err != nil {
+			l.WithError(err).Errorf("Unable to locate reactor %d to spawn monster at.", c.ReactorId)
+			return
+		}
+		monster.Spawn(l)(c.WorldId, c.ChannelId, c.MapId, monsterId, 1, r.X(), r.Y())
 	}
 }
 
@@ -176,7 +184,7 @@ func SpawnFakeMonster(monsterId uint32) func(l logrus.FieldLogger, db *gorm.DB, 
 
 func SpawnMonsterAt(monsterId uint32, x int16, y int16) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-
+		monster.Spawn(l)(c.WorldId, c.ChannelId, c.MapId, monsterId, 1, x, y)
 	}
 }
 
@@ -190,7 +198,7 @@ func SpawnMonsters(monsterId uint32, quantity uint16) func(l logrus.FieldLogger,
 }
 
 func SpawnMonstersAt(monsterId uint32, quantity uint16, x int16, y int16) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	smf := SpawnMonster(monsterId)
+	smf := SpawnMonsterAt(monsterId, x, y)
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 		for i := uint16(0); i < quantity; i++ {
 			smf(l, db, c)
@@ -200,19 +208,23 @@ func SpawnMonstersAt(monsterId uint32, quantity uint16, x int16, y int16) func(l
 
 func PinkMessage(text string) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-
+		character.SendNotice(l)(c.CharacterId, "PINK_TEXT", text)
 	}
 }
 
 func MapPinkMessage(text string) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-
+		for _, cid := range _map.CharactersInMap(l)(c.WorldId, c.ChannelId, c.MapId) {
+			character.SendNotice(l)(cid, "PINK_TEXT", text)
+		}
 	}
 }
 
 func MapBlueMessage(text string) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-
+		for _, cid := range _map.CharactersInMap(l)(c.WorldId, c.ChannelId, c.MapId) {
+			character.SendNotice(l)(cid, "LIGHT_BLUE", text)
+		}
 	}
 }
 

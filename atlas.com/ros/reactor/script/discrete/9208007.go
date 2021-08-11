@@ -10,12 +10,12 @@ import (
 
 func New9208007() script.Script {
 	return generic.NewReactor(9208007, generic.SetAct(func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-		r, err := reactor.GetByNameInMap(l)(c.WorldId, c.ChannelId, 990000400, "speargate")
+		r, err := reactor.GetByNameInMap(c.WorldId, c.ChannelId, 990000400, "speargate")
 		if err != nil {
 			return
 		}
 		reactor.TryForceHitReactor(l)(r.Id(), r.State()+1)
-		r, err = reactor.GetByNameInMap(l)(c.WorldId, c.ChannelId, 990000400, "speargate")
+		r, err = reactor.GetById(r.Id())
 		if err != nil {
 			return
 		}

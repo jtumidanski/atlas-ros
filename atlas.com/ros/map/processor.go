@@ -2,50 +2,60 @@ package _map
 
 import "github.com/sirupsen/logrus"
 
-func MonstersCount(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) uint32 {
+func MonstersCount(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) uint32 {
 	return func(worldId byte, channelId byte, mapId uint32) uint32 {
+		// TODO
 		return 0
 	}
 }
 
-func MonsterCount(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, monsterId uint32) int {
+func MonsterCount(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, monsterId uint32) int {
 	return func(worldId byte, channelId byte, mapId uint32, monsterId uint32) int {
+		// TODO
 		return 0
 	}
 }
 
-func HitReactor(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorName string) {
+func HitReactor(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorName string) {
 	return func(worldId byte, channelId byte, mapId uint32, reactorName string) {
-
+		// TODO
 	}
 }
 
-func MoveEnvironment(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, environment string, mode byte) {
+func MoveEnvironment(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, environment string, mode byte) {
 	return func(worldId byte, channelId byte, mapId uint32, environment string, mode byte) {
-
+		// TODO
 	}
 }
 
-func ToggleEnvironment(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, environment string) {
+func ToggleEnvironment(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, environment string) {
 	return func(worldId byte, channelId byte, mapId uint32, environment string) {
-
+		// TODO
 	}
 }
 
-func KillAllMonsters(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) {
+func KillAllMonsters(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) {
 	return func(worldId byte, channelId byte, mapId uint32) {
-
+		// TODO
 	}
 }
 
-func SetSummonState(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, state bool) {
+func SetSummonState(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, state bool) {
 	return func(worldId byte, channelId byte, mapId uint32, state bool) {
-
+		// TODO
 	}
 }
 
-func SummonState(l logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) bool {
+func SummonState(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) bool {
 	return func(worldId byte, channelId byte, mapId uint32) bool {
+		// TODO
 		return false
+	}
+}
+
+func CharactersInMap(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) []uint32 {
+	return func(worldId byte, channelId byte, mapId uint32) []uint32 {
+		// TODO
+		return []uint32{}
 	}
 }

@@ -12,7 +12,7 @@ import (
 
 func New6701001() script.Script {
 	return generic.NewReactor(6701001, generic.SetAct(func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-		r, err := reactor.GetById(l)(c.ReactorId)
+		r, err := reactor.GetById(c.ReactorId)
 		if err != nil {
 			return
 		}

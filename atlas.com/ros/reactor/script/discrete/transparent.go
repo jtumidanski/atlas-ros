@@ -38,14 +38,15 @@ func TransparentAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 		event.GiveParticipantsExperience(l)(e.Id(), 3500)
 		event.SetStringProperty(l)(e.Id(), "statusStg2", "1")
 		generic.ShowClearEffectWithGate(true)(l, db, c)
-	} else {
-		count++
-		event.SetProperty(l)(e.Id(), "statusStg2_c", count)
-		nh := uint32((11 * count) % 14)
-		r, err := reactor.GetByClassificationInMap(l)(c.WorldId, c.ChannelId, c.MapId, 2001002+nh)
-		if err != nil {
-			return
-		}
-		generic.SpawnMonsterAt(9300040, r.X(), r.Y())
+		return
 	}
+
+	count++
+	event.SetProperty(l)(e.Id(), "statusStg2_c", count)
+	nh := uint32((11 * count) % 14)
+	r, err := reactor.GetByClassificationInMap(c.WorldId, c.ChannelId, c.MapId, 2001002+nh)
+	if err != nil {
+		return
+	}
+	generic.SpawnMonsterAt(9300040, r.X(), r.Y())
 }

@@ -99,6 +99,10 @@ func (m Model) TimeoutState() int8 {
 	return m.statistics.TimeoutState(m.state)
 }
 
+func (m Model) AttackHit() bool {
+	return m.attackHit
+}
+
 type Modifier func(m *Model)
 
 func incrementState() Modifier {
@@ -110,6 +114,12 @@ func incrementState() Modifier {
 func setState(state int8) Modifier {
 	return func(m *Model) {
 		m.state = state
+	}
+}
+
+func setEventState(eventState byte) Modifier {
+	return func(m *Model) {
+		m.eventState = eventState
 	}
 }
 

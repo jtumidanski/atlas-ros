@@ -10,7 +10,7 @@ import (
 
 func New3009000() script.Script {
 	return generic.NewReactor(3009000, generic.SetAct(func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-		r, err := reactor.GetById(l)(c.ReactorId)
+		r, err := reactor.GetById(c.ReactorId)
 		if err != nil {
 			return
 		}

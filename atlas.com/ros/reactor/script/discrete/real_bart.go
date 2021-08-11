@@ -1,6 +1,7 @@
 package discrete
 
 import (
+	"atlas-ros/character"
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
@@ -13,9 +14,9 @@ func NewRealBart() script.Script {
 }
 
 func RealBartAct(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-	//if (rm.isQuestStarted(6400)) {
-	//	rm.setQuestProgress(6400, 1, 2)
-	//	rm.setQuestProgress(6400, 6401, "q3")
-	//}
-	//MessageBroadcaster.getInstance().sendServerNotice(rm.getPlayer(), ServerNoticeType.PINK_TEXT, I18nMessage.from("REAL_BART_FOUND"))
+	if character.QuestStarted(l)(c.CharacterId, 6400) {
+		character.SetQuestProgress(l)(c.CharacterId, 6400, 1, 2)
+		character.SetQuestProgressString(l)(c.CharacterId, 6400, 6401, "q3")
+	}
+	generic.PinkMessage("REAL_BART_FOUND")(l, db, c)
 }

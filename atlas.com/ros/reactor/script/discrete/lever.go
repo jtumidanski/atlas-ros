@@ -14,7 +14,7 @@ func NewLever() script.Script {
 }
 
 func LeverHit(l logrus.FieldLogger, _ *gorm.DB, c script.Context) {
-	r, err := reactor.GetById(l)(c.ReactorId)
+	r, err := reactor.GetById(c.ReactorId)
 	if err != nil {
 		return
 	}

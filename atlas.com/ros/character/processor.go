@@ -44,8 +44,34 @@ func WarpRandom(l logrus.FieldLogger) func(worldId byte, channelId byte, charact
 	}
 }
 
-func QuestActive(l logrus.FieldLogger) func(characterId uint32, questId uint32) bool {
+func QuestActive(_ logrus.FieldLogger) func(characterId uint32, questId uint32) bool {
 	return func(characterId uint32, questId uint32) bool {
+		// TODO
 		return false
+	}
+}
+
+func QuestStarted(_ logrus.FieldLogger) func(characterId uint32, questId uint32) bool {
+	return func(characterId uint32, questId uint32) bool {
+		// TODO
+		return false
+	}
+}
+
+func SetQuestProgress(_ logrus.FieldLogger) func(characterId uint32, questId uint32, infoNumber uint32, value int32) {
+	return func(characterId uint32, questId uint32, infoNumber uint32, value int32) {
+		// TODO
+	}
+}
+
+func SetQuestProgressString(_ logrus.FieldLogger) func(characterId uint32, questId uint32, infoNumber uint32, value string) {
+	return func(characterId uint32, questId uint32, infoNumber uint32, value string) {
+		// TODO
+	}
+}
+
+func SendNotice(l logrus.FieldLogger) func(characterId uint32, noticeType string, message string) {
+	return func(characterId uint32, noticeType string, message string) {
+		//TODO
 	}
 }

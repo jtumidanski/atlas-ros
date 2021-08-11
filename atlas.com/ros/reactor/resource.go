@@ -35,7 +35,7 @@ func ParseId(l logrus.FieldLogger, db *gorm.DB, next IdHandler) http.HandlerFunc
 
 func HandleGetReactor(l logrus.FieldLogger, _ *gorm.DB, reactorId uint32) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		r, err := GetById(l)(reactorId)
+		r, err := GetById(reactorId)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return

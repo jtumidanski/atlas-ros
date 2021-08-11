@@ -6,6 +6,8 @@ import (
 	"atlas-ros/reactor/script/generic"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"math"
+	"math/rand"
 )
 
 func NewHuntersAltar() script.Script {
@@ -14,5 +16,5 @@ func NewHuntersAltar() script.Script {
 
 func HuntersAltarHit(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	//rm.hitMonsterWithReactor(6090001, 4)
-	//rm.getReactor().setEventState(Math.floor(Math.random() * 3).byteValue())
+	_, _ = reactor.SetEventState(c.ReactorId, byte(math.Floor(rand.Float64()*3)))
 }

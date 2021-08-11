@@ -21,7 +21,7 @@ func New9108005() script.Script {
 			return
 		}
 
-		r, err := reactor.GetByNameInMap(l)(c.WorldId, c.ChannelId, c.MapId, "fullmoon")
+		r, err := reactor.GetByNameInMap(c.WorldId, c.ChannelId, c.MapId, "fullmoon")
 		if err != nil {
 			return
 		}
