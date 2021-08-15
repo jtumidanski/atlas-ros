@@ -24,7 +24,6 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /
 
 COPY --from=build-env /server /
-COPY /atlas.com/ros/config.yaml /
 COPY data /data
 COPY /wz /wz
 

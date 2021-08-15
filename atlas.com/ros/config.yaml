@@ -1,2 +1,0 @@
-undertakerTaskInterval: 10000 # Interval at which the undertaker task executes (in milliseconds).
-undertakerDuration: 60000  # Duration (in milliseconds) which dead reactors persist.

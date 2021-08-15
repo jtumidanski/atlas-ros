@@ -30,7 +30,6 @@ WORKDIR /
 
 COPY --from=build-env /server /
 COPY --from=build-env /go/bin/dlv /
-COPY /atlas.com/ros/config.yaml /
 COPY data /data
 COPY /wz /wz
 
