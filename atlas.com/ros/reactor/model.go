@@ -107,6 +107,14 @@ func (m Model) AttackHit() bool {
 	return m.attackHit
 }
 
+func (m Model) UpdateTime() time.Time {
+	return m.updateTime
+}
+
+func (m Model) Alive() bool {
+	return m.alive
+}
+
 type Modifier func(m *Model)
 
 func incrementState() Modifier {

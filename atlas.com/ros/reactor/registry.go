@@ -4,6 +4,7 @@ import (
 	"atlas-ros/reactor/statistics"
 	"errors"
 	"sync"
+	"time"
 )
 
 type registry struct {
@@ -45,6 +46,38 @@ func (r *registry) Get(id uint32) (*Model, error) {
 		r.lock.RUnlock()
 		return nil, errors.New("unable to locate reactor")
 	}
+}
+
+type Filter func(*Model) bool
+
+func Dead() Filter {
+	return func(m *Model) bool {
+		return !m.alive
+	}
+}
+
+func (r *registry) GetAllDead() []Model {
+	return r.GetAll(Dead())
+}
+
+func (r *registry) GetAll(filters ...Filter) []Model {
+	r.lock.RLock()
+	var result []Model
+
+	for _, x := range r.reactors {
+		ok := true
+		for _, filter := range filters {
+			if !filter(x) {
+				ok = false
+			}
+		}
+		if ok {
+			result = append(result, *x)
+		}
+	}
+
+	r.lock.RUnlock()
+	return result
 }
 
 func (r *registry) GetInMap(worldId byte, channelId byte, mapId uint32) []Model {
@@ -93,6 +126,7 @@ func (r *registry) Create(worldId byte, channelId byte, mapId uint32, classifica
 		x:              x,
 		y:              y,
 		alive:          true,
+		updateTime:     time.Now(),
 	}
 	r.reactors[id] = m
 
