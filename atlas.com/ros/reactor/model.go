@@ -1,6 +1,9 @@
 package reactor
 
-import "atlas-ros/reactor/statistics"
+import (
+	"atlas-ros/reactor/statistics"
+	"time"
+)
 
 type Model struct {
 	id             uint32
@@ -20,6 +23,7 @@ type Model struct {
 	shouldCollect  bool
 	attackHit      bool
 	delayedRespawn bool
+	updateTime     time.Time
 }
 
 func (m Model) Id() uint32 {
@@ -132,5 +136,17 @@ func advanceState(b byte) Modifier {
 func shouldCollect(value bool) Modifier {
 	return func(m *Model) {
 		m.shouldCollect = value
+	}
+}
+
+func setDestroyed() Modifier {
+	return func(m *Model) {
+		m.alive = false
+	}
+}
+
+func updateTime() Modifier {
+	return func(m *Model) {
+		m.updateTime = time.Now()
 	}
 }

@@ -167,16 +167,21 @@ func trigger(l logrus.FieldLogger) func(r *Model, stance uint16) {
 
 func destroy(l logrus.FieldLogger) func(r *Model) {
 	return func(r *Model) {
-		GetRegistry().Destroy(r.Id())
-		clearTimeout(l)(r)
-		producers.Destroyed(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.Id())
-		go respawn(l)(r)
+		dr, err := GetRegistry().Destroy(r.Id())
+		if err != nil {
+			l.WithError(err).Errorf("Unable to destroy reactor %d.", r.Id())
+			return
+		}
+		clearTimeout(l)(dr)
+		producers.Destroyed(l)(dr.WorldId(), dr.ChannelId(), dr.MapId(), dr.Id())
+		go respawn(l)(dr)
+		//TODO need task to clean up destroyed reactors.
 	}
 }
 
 func respawn(l logrus.FieldLogger) func(r *Model) {
 	return func(r *Model) {
-		time.Sleep(time.Duration(r.Delay()) * time.Second)
+		time.Sleep(time.Duration(r.Delay()) * time.Millisecond)
 		_, err := Create(l)(r.WorldId(), r.ChannelId(), r.MapId(), r.Classification(), r.Name(), 0, r.X(), r.Y(), r.Delay(), r.FacingDirection())
 		if err != nil {
 			l.WithError(err).Errorf("Unable to respawn reactor %d at location %d,%d in map %d.", r.Classification(), r.X(), r.Y(), r.MapId())

@@ -69,7 +69,11 @@ func (m Model) SetRB(x int32, y int32) *Model {
 }
 
 func (m Model) Type(state int8) int32 {
-	return m.stateInfo[state][0].Type()
+	val, ok := m.stateInfo[state]
+	if !ok {
+		return -1
+	}
+	return val[0].Type()
 }
 
 func (m Model) NextState(state int8, index byte) int8 {

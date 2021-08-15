@@ -73,12 +73,11 @@ func HandleGetReactors(l logrus.FieldLogger, _ *gorm.DB, worldId byte, channelId
 			result.Data = append(result.Data, body)
 		}
 
+		w.WriteHeader(http.StatusOK)
 		err := json.ToJSON(result, w)
 		if err != nil {
 			l.WithError(err).Errorf("Encoding response")
 			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			w.WriteHeader(http.StatusOK)
 		}
 	}
 }

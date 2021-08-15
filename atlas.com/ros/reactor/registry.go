@@ -116,6 +116,7 @@ func (r *registry) Update(id uint32, modifiers ...Modifier) (*Model, error) {
 		for _, modifier := range modifiers {
 			modifier(val)
 		}
+		updateTime()(val)
 		r.reactors[id] = val
 		return val, nil
 	} else {
@@ -138,7 +139,11 @@ func (r *registry) getNextId() uint32 {
 	return runningId
 }
 
-func (r *registry) Destroy(id uint32) {
+func (r *registry) Destroy(id uint32) (*Model, error) {
+	return r.Update(id, setDestroyed(), updateTime())
+}
+
+func (r *registry) Remove(id uint32) {
 	r.lock.Lock()
 	val, ok := r.reactors[id]
 	if !ok {

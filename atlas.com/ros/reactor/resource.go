@@ -9,7 +9,6 @@ import (
 	"strconv"
 )
 
-
 func InitResource(router *mux.Router, l logrus.FieldLogger, db *gorm.DB) {
 	r := router.PathPrefix("/reactors").Subrouter()
 	r.HandleFunc("/{id}", ParseId(l, db, HandleGetReactor)).Methods(http.MethodGet)
@@ -23,13 +22,13 @@ type IdHandler func(l logrus.FieldLogger, db *gorm.DB, reactorId uint32) http.Ha
 
 func ParseId(l logrus.FieldLogger, db *gorm.DB, next IdHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		reactorId, err := strconv.Atoi(mux.Vars(r)["reactorId"])
+		reactorId, err := strconv.Atoi(mux.Vars(r)["id"])
 		if err != nil {
 			l.WithError(err).Errorf("Unable to properly parse reactorId from path.")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		next(l, db, uint32(reactorId))
+		next(l, db, uint32(reactorId))(w, r)
 	}
 }
 
@@ -42,12 +41,12 @@ func HandleGetReactor(l logrus.FieldLogger, _ *gorm.DB, reactorId uint32) http.H
 		}
 
 		result := &DataContainer{Data: MakeReactorBody(*r)}
+
+		w.WriteHeader(http.StatusOK)
 		err = json.ToJSON(result, w)
 		if err != nil {
 			l.WithError(err).Errorf("Encoding response")
 			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
