@@ -3,6 +3,7 @@ package portal
 import (
 	"atlas-ros/rest/requests"
 	"fmt"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -13,20 +14,24 @@ const (
 	portalsByName                      = portalsResource + "?name=%s"
 )
 
-func requestByName(mapId uint32, portalName string) (*dataContainer, error) {
-	ar := &dataContainer{}
-	err := requests.Get(fmt.Sprintf(portalsByName, mapId, portalName), ar)
-	if err != nil {
-		return nil, err
+func requestByName(l logrus.FieldLogger) func(mapId uint32, portalName string) (*dataContainer, error) {
+	return func(mapId uint32, portalName string) (*dataContainer, error) {
+		ar := &dataContainer{}
+		err := requests.Get(l)(fmt.Sprintf(portalsByName, mapId, portalName), ar)
+		if err != nil {
+			return nil, err
+		}
+		return ar, nil
 	}
-	return ar, nil
 }
 
-func requestAll(mapId uint32) (*dataContainer, error) {
-	ar := &dataContainer{}
-	err := requests.Get(fmt.Sprintf(portalsResource, mapId), ar)
-	if err != nil {
-		return nil, err
+func requestAll(l logrus.FieldLogger) func(mapId uint32) (*dataContainer, error) {
+	return func(mapId uint32) (*dataContainer, error) {
+		ar := &dataContainer{}
+		err := requests.Get(l)(fmt.Sprintf(portalsResource, mapId), ar)
+		if err != nil {
+			return nil, err
+		}
+		return ar, nil
 	}
-	return ar, nil
 }

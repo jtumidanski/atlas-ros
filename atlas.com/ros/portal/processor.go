@@ -17,7 +17,7 @@ func FixedPortalIdProvider(portalId uint32) IdProvider {
 func ByNamePortalIdProvider(l logrus.FieldLogger) func(mapId uint32, name string) IdProvider {
 	return func(mapId uint32, name string) IdProvider {
 		return func() uint32 {
-			p, err := GetByName(mapId, name)
+			p, err := GetByName(l)(mapId, name)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to retrieve portal for map %d of name %s. Defaulting to 0.", mapId, name)
 				return 0
@@ -30,7 +30,7 @@ func ByNamePortalIdProvider(l logrus.FieldLogger) func(mapId uint32, name string
 func RandomPortalIdProvider(l logrus.FieldLogger) func(mapId uint32) IdProvider {
 	return func(mapId uint32) IdProvider {
 		return func() uint32 {
-			ps, err := ForMap(mapId)
+			ps, err := ForMap(l)(mapId)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to retrieve portals for map %d. Defaulting to 0.", mapId)
 				return 0
@@ -44,34 +44,38 @@ func RandomPortalIdProvider(l logrus.FieldLogger) func(mapId uint32) IdProvider 
 	}
 }
 
-func ForMap(mapId uint32) ([]*Model, error) {
-	resp, err := requestAll(mapId)
-	if err != nil {
-		return nil, err
-	}
-
-	results := make([]*Model, 0)
-	for _, d := range resp.DataList() {
-		p, err := makePortal(d)
+func ForMap(l logrus.FieldLogger) func(mapId uint32) ([]*Model, error) {
+	return func(mapId uint32) ([]*Model, error) {
+		resp, err := requestAll(l)(mapId)
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, p)
+
+		results := make([]*Model, 0)
+		for _, d := range resp.DataList() {
+			p, err := makePortal(d)
+			if err != nil {
+				return nil, err
+			}
+			results = append(results, p)
+		}
+		return results, nil
 	}
-	return results, nil
 }
 
-func GetByName(mapId uint32, portalName string) (*Model, error) {
-	resp, err := requestByName(mapId, portalName)
-	if err != nil {
-		return nil, err
-	}
+func GetByName(l logrus.FieldLogger) func(mapId uint32, portalName string) (*Model, error) {
+	return func(mapId uint32, portalName string) (*Model, error) {
+		resp, err := requestByName(l)(mapId, portalName)
+		if err != nil {
+			return nil, err
+		}
 
-	p, err := makePortal(resp.Data())
-	if err != nil {
-		return nil, err
+		p, err := makePortal(resp.Data())
+		if err != nil {
+			return nil, err
+		}
+		return p, nil
 	}
-	return p, nil
 }
 
 func makePortal(body *dataBody) (*Model, error) {
