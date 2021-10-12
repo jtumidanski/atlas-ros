@@ -4,23 +4,38 @@ import (
 	"atlas-ros/json"
 	"atlas-ros/kafka/producers"
 	"atlas-ros/reactor"
+	"atlas-ros/rest"
 	"atlas-ros/rest/resource"
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
 
+const (
+	GetReactors   = "get_reactors"
+	CreateReactor = "create_reactor"
+)
+
 func InitResource(router *mux.Router, l logrus.FieldLogger, db *gorm.DB) {
 	w := router.PathPrefix("/worlds").Subrouter()
-	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", ParseMap(l, db, HandleGetReactors)).Methods(http.MethodGet)
-	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", ParseMap(l, db, HandleCreateReactor)).Methods(http.MethodPost)
+	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", registerGetReactors(l)).Methods(http.MethodGet)
+	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", registerCreateReactors(l)).Methods(http.MethodPost)
 }
 
-type MapHandler func(l logrus.FieldLogger, db *gorm.DB, worldId byte, channelId byte, mapId uint32) http.HandlerFunc
+func registerCreateReactors(l logrus.FieldLogger) http.HandlerFunc {
+	return rest.RetrieveSpan(CreateReactor, func(span opentracing.Span) http.HandlerFunc {
+		return ParseMap(l, func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+			return handleCreateReactor(l)(span)(worldId, channelId, mapId)
+		})
+	})
+}
 
-func ParseMap(l logrus.FieldLogger, db *gorm.DB, next MapHandler) http.HandlerFunc {
+type MapHandler func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc
+
+func ParseMap(l logrus.FieldLogger, next MapHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		worldId, err := strconv.Atoi(mux.Vars(r)["worldId"])
 		if err != nil {
@@ -40,44 +55,60 @@ func ParseMap(l logrus.FieldLogger, db *gorm.DB, next MapHandler) http.HandlerFu
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		next(l, db, byte(worldId), byte(channelId), uint32(mapId))(w, r)
+		next(byte(worldId), byte(channelId), uint32(mapId))(w, r)
 	}
 }
 
-func HandleCreateReactor(l logrus.FieldLogger, _ *gorm.DB, worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		li := &reactor.InputDataContainer{}
-		err := json.FromJSON(li, r.Body)
-		if err != nil {
-			l.WithError(err).Errorf("Deserializing input.")
-			w.WriteHeader(http.StatusBadRequest)
-			err = json.ToJSON(&resource.GenericError{Message: err.Error()}, w)
-			if err != nil {
-				l.WithError(err).Fatalf("Writing error message.")
+func handleCreateReactor(l logrus.FieldLogger) func(span opentracing.Span) func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+	return func(span opentracing.Span) func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+		return func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+			return func(w http.ResponseWriter, r *http.Request) {
+				li := &reactor.InputDataContainer{}
+				err := json.FromJSON(li, r.Body)
+				if err != nil {
+					l.WithError(err).Errorf("Deserializing input.")
+					w.WriteHeader(http.StatusBadRequest)
+					err = json.ToJSON(&resource.GenericError{Message: err.Error()}, w)
+					if err != nil {
+						l.WithError(err).Fatalf("Writing error message.")
+					}
+					return
+				}
+				attr := li.Data.Attributes
+				producers.CreateReactor(l, span)(worldId, channelId, mapId, attr.Classification, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
+				w.WriteHeader(http.StatusAccepted)
 			}
-			return
 		}
-		attr := li.Data.Attributes
-		producers.CreateReactor(l)(worldId, channelId, mapId, attr.Classification, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
-		w.WriteHeader(http.StatusAccepted)
 	}
 }
 
-func HandleGetReactors(l logrus.FieldLogger, _ *gorm.DB, worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
-	return func(w http.ResponseWriter, _ *http.Request) {
-		reactors := reactor.GetInMap(l)(worldId, channelId, mapId)
+func registerGetReactors(l logrus.FieldLogger) http.HandlerFunc {
+	return rest.RetrieveSpan(GetReactors, func(span opentracing.Span) http.HandlerFunc {
+		return ParseMap(l, func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+			return handleGetReactors(l)(span)(worldId, channelId, mapId)
+		})
+	})
+}
 
-		result := &reactor.DataListContainer{Data: make([]reactor.DataBody, 0)}
-		for _, r := range reactors {
-			body := reactor.MakeReactorBody(r)
-			result.Data = append(result.Data, body)
-		}
+func handleGetReactors(l logrus.FieldLogger) func(span opentracing.Span) func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+	return func(span opentracing.Span) func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+		return func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
+			return func(w http.ResponseWriter, _ *http.Request) {
+				reactors := reactor.GetInMap(l)(worldId, channelId, mapId)
 
-		w.WriteHeader(http.StatusOK)
-		err := json.ToJSON(result, w)
-		if err != nil {
-			l.WithError(err).Errorf("Encoding response")
-			w.WriteHeader(http.StatusInternalServerError)
+				result := &reactor.DataListContainer{Data: make([]reactor.DataBody, 0)}
+				for _, r := range reactors {
+					body := reactor.MakeReactorBody(r)
+					result.Data = append(result.Data, body)
+				}
+
+				w.WriteHeader(http.StatusOK)
+				err := json.ToJSON(result, w)
+				if err != nil {
+					l.WithError(err).Errorf("Encoding response")
+					w.WriteHeader(http.StatusInternalServerError)
+				}
+			}
 		}
 	}
 }

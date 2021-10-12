@@ -5,6 +5,7 @@ import (
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -13,7 +14,7 @@ func NewRecord() script.Script {
 	return generic.NewReactor(reactor.Record, generic.SetAct(RecordAct))
 }
 
-func RecordAct(l logrus.FieldLogger, _ *gorm.DB, c script.Context) {
+func RecordAct(l logrus.FieldLogger, _ opentracing.Span, _ *gorm.DB, c script.Context) {
 	if !event.ParticipatingInEvent(l)(c.CharacterId) {
 		return
 	}

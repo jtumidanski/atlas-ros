@@ -3,6 +3,7 @@ package portal
 import (
 	"atlas-ros/rest/requests"
 	"fmt"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,10 +15,10 @@ const (
 	portalsByName                      = portalsResource + "?name=%s"
 )
 
-func requestByName(l logrus.FieldLogger) func(mapId uint32, portalName string) (*dataContainer, error) {
+func requestByName(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32, portalName string) (*dataContainer, error) {
 	return func(mapId uint32, portalName string) (*dataContainer, error) {
 		ar := &dataContainer{}
-		err := requests.Get(l)(fmt.Sprintf(portalsByName, mapId, portalName), ar)
+		err := requests.Get(l, span)(fmt.Sprintf(portalsByName, mapId, portalName), ar)
 		if err != nil {
 			return nil, err
 		}
@@ -25,10 +26,10 @@ func requestByName(l logrus.FieldLogger) func(mapId uint32, portalName string) (
 	}
 }
 
-func requestAll(l logrus.FieldLogger) func(mapId uint32) (*dataContainer, error) {
+func requestAll(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32) (*dataContainer, error) {
 	return func(mapId uint32) (*dataContainer, error) {
 		ar := &dataContainer{}
-		err := requests.Get(l)(fmt.Sprintf(portalsResource, mapId), ar)
+		err := requests.Get(l, span)(fmt.Sprintf(portalsResource, mapId), ar)
 		if err != nil {
 			return nil, err
 		}

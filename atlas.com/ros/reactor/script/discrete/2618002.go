@@ -4,12 +4,13 @@ import (
 	"atlas-ros/event"
 	_map "atlas-ros/map"
 	"atlas-ros/reactor/script"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 func Hit2618002() script.HitFunc {
-	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return func(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB, c script.Context) {
 		if !event.ParticipatingInEvent(l)(c.CharacterId) {
 			return
 		}

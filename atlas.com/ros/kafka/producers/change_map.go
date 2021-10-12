@@ -1,6 +1,7 @@
 package producers
 
 import (
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,8 +13,8 @@ type changeMapEvent struct {
 	PortalId    uint32 `json:"portalId"`
 }
 
-func ChangeMap(l logrus.FieldLogger) func(worldId byte, channelId byte, characterId uint32, mapId uint32, portalId uint32) {
-	producer := ProduceEvent(l, "TOPIC_CHANGE_MAP_COMMAND")
+func ChangeMap(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, characterId uint32, mapId uint32, portalId uint32) {
+	producer := ProduceEvent(l, span, "TOPIC_CHANGE_MAP_COMMAND")
 	return func(worldId byte, channelId byte, characterId uint32, mapId uint32, portalId uint32) {
 		event := &changeMapEvent{WorldId: worldId, ChannelId: channelId, CharacterId: characterId, MapId: mapId, PortalId: portalId}
 		producer(CreateKey(int(characterId)), event)

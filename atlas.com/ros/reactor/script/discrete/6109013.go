@@ -5,6 +5,7 @@ import (
 	_map "atlas-ros/map"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ func New6109013() script.Script {
 }
 
 func Release6109013() script.ReleaseFunc {
-	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return func(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB, c script.Context) {
 		fid := "glpq_s"
 		if !event.ParticipatingInEvent(l)(c.CharacterId) {
 			return
@@ -40,7 +41,7 @@ func Action6109013(l logrus.FieldLogger, c script.Context, eventId uint32) {
 }
 
 func Touch6109013() script.TouchFunc {
-	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return func(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB, c script.Context) {
 		fid := "glpq_s"
 		if !event.ParticipatingInEvent(l)(c.CharacterId) {
 			return

@@ -3,6 +3,7 @@ package consumers
 import (
 	"atlas-ros/kafka/handler"
 	"atlas-ros/reactor"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -22,9 +23,9 @@ func EmptyTouchReactorCommand() handler.EmptyEventCreator {
 }
 
 func HandleTouchReactorCommand(db *gorm.DB) handler.EventHandler {
-	return func(l logrus.FieldLogger, e interface{}) {
+	return func(l logrus.FieldLogger, span opentracing.Span, e interface{}) {
 		if command, ok := e.(*touchReactorCommand); ok {
-			err := reactor.Touch(l, db)(command.Id, command.CharacterId)
+			err := reactor.Touch(l, span, db)(command.Id, command.CharacterId)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to touch reactor %d in map %d by command.", command.Id, command.MapId)
 			}

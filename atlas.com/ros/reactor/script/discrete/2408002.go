@@ -3,12 +3,13 @@ package discrete
 import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 func New2408002() script.Script {
-	return generic.NewReactor(2408002, generic.SetAct(func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return generic.NewReactor(2408002, generic.SetAct(func(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB, c script.Context) {
 		//EventInstanceManager eim = rm.getPlayer().getEventInstance()
 		//MapleMap map = eim.getMapFactory().getMap(240050100)
 		//int mapId = rm.getPlayer().getMapId()

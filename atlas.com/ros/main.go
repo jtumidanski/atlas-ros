@@ -10,13 +10,17 @@ import (
 	"atlas-ros/reactor/script/initializer"
 	"atlas-ros/reactor/script/registry"
 	"atlas-ros/rest"
+	"atlas-ros/tracing"
 	"atlas-ros/wz"
 	"context"
+	"io"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 )
+
+const serviceName = "atlas-ros"
 
 func main() {
 	l := logger.CreateLogger()
@@ -24,6 +28,17 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
+
+	tc, err := tracing.InitTracer(l)(serviceName)
+	if err != nil {
+		l.WithError(err).Fatal("Unable to initialize tracer.")
+	}
+	defer func(tc io.Closer) {
+		err := tc.Close()
+		if err != nil {
+			l.WithError(err).Errorf("Unable to close tracer.")
+		}
+	}(tc)
 
 	wzDir := os.Getenv("WZ_DIR")
 	wz.GetFileCache().Init(wzDir)

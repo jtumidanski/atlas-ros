@@ -1,6 +1,7 @@
 package portal
 
 import (
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"math/rand"
 	"strconv"
@@ -14,10 +15,10 @@ func FixedPortalIdProvider(portalId uint32) IdProvider {
 	}
 }
 
-func ByNamePortalIdProvider(l logrus.FieldLogger) func(mapId uint32, name string) IdProvider {
+func ByNamePortalIdProvider(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32, name string) IdProvider {
 	return func(mapId uint32, name string) IdProvider {
 		return func() uint32 {
-			p, err := GetByName(l)(mapId, name)
+			p, err := GetByName(l, span)(mapId, name)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to retrieve portal for map %d of name %s. Defaulting to 0.", mapId, name)
 				return 0
@@ -27,10 +28,10 @@ func ByNamePortalIdProvider(l logrus.FieldLogger) func(mapId uint32, name string
 	}
 }
 
-func RandomPortalIdProvider(l logrus.FieldLogger) func(mapId uint32) IdProvider {
+func RandomPortalIdProvider(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32) IdProvider {
 	return func(mapId uint32) IdProvider {
 		return func() uint32 {
-			ps, err := ForMap(l)(mapId)
+			ps, err := ForMap(l, span)(mapId)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to retrieve portals for map %d. Defaulting to 0.", mapId)
 				return 0
@@ -44,9 +45,9 @@ func RandomPortalIdProvider(l logrus.FieldLogger) func(mapId uint32) IdProvider 
 	}
 }
 
-func ForMap(l logrus.FieldLogger) func(mapId uint32) ([]*Model, error) {
+func ForMap(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32) ([]*Model, error) {
 	return func(mapId uint32) ([]*Model, error) {
-		resp, err := requestAll(l)(mapId)
+		resp, err := requestAll(l, span)(mapId)
 		if err != nil {
 			return nil, err
 		}
@@ -63,9 +64,9 @@ func ForMap(l logrus.FieldLogger) func(mapId uint32) ([]*Model, error) {
 	}
 }
 
-func GetByName(l logrus.FieldLogger) func(mapId uint32, portalName string) (*Model, error) {
+func GetByName(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32, portalName string) (*Model, error) {
 	return func(mapId uint32, portalName string) (*Model, error) {
-		resp, err := requestByName(l)(mapId, portalName)
+		resp, err := requestByName(l, span)(mapId, portalName)
 		if err != nil {
 			return nil, err
 		}

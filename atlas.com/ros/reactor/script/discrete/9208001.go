@@ -6,12 +6,13 @@ import (
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
 	"fmt"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 func New9208001() script.Script {
-	return generic.NewReactor(9208001, generic.SetAct(func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return generic.NewReactor(9208001, generic.SetAct(func(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB, c script.Context) {
 		if !event.ParticipatingInEvent(l)(c.CharacterId) {
 			return
 		}
@@ -36,7 +37,7 @@ func New9208001() script.Script {
 			event.SetStringProperty(l)(e.Id(), "stage1combo", prevCombo)
 			if len(prevCombo) == int(3*(stage+3)) {
 				event.SetStringProperty(l)(e.Id(), "stage1status", "active")
-				generic.MapPinkMessage("PROCEED_WITH_CAUTION")(l, db, c)
+				generic.MapPinkMessage("PROCEED_WITH_CAUTION")(l, span, db, c)
 				event.SetStringProperty(l)(e.Id(), "stage1guess", "")
 			}
 			return

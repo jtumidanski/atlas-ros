@@ -3,6 +3,7 @@ package consumers
 import (
 	"atlas-ros/kafka/handler"
 	"atlas-ros/reactor"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -27,9 +28,9 @@ func EmptyCreateReactorCommand() handler.EmptyEventCreator {
 }
 
 func HandleCreateReactorCommand(_ *gorm.DB) handler.EventHandler {
-	return func(l logrus.FieldLogger, e interface{}) {
+	return func(l logrus.FieldLogger, span opentracing.Span, e interface{}) {
 		if command, ok := e.(*createReactorCommand); ok {
-			_, err := reactor.Create(l)(command.WorldId, command.ChannelId, command.MapId, command.Classification, command.Name, command.State, command.X, command.Y, command.Delay, command.Direction)
+			_, err := reactor.Create(l, span)(command.WorldId, command.ChannelId, command.MapId, command.Classification, command.Name, command.State, command.X, command.Y, command.Delay, command.Direction)
 			if err != nil {
 				l.WithError(err).Errorf("Unable to create reactor %d in map %d by command.", command.Classification, command.MapId)
 			}

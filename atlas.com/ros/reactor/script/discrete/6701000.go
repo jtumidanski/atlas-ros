@@ -4,6 +4,7 @@ import (
 	"atlas-ros/reactor"
 	"atlas-ros/reactor/script"
 	"atlas-ros/reactor/script/generic"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"math"
@@ -11,7 +12,7 @@ import (
 )
 
 func New6701000() script.Script {
-	return generic.NewReactor(6701000, generic.SetAct(func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
+	return generic.NewReactor(6701000, generic.SetAct(func(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB, c script.Context) {
 		r, err := reactor.GetById(c.ReactorId)
 		if err != nil {
 			return
