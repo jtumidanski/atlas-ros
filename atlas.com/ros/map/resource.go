@@ -15,18 +15,18 @@ import (
 )
 
 const (
-	GetReactors   = "get_reactors"
-	CreateReactor = "create_reactor"
+	getReactors   = "get_reactors"
+	createReactor = "create_reactor"
 )
 
-func InitResource(router *mux.Router, l logrus.FieldLogger, db *gorm.DB) {
+func InitResource(router *mux.Router, l logrus.FieldLogger, _ *gorm.DB) {
 	w := router.PathPrefix("/worlds").Subrouter()
 	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", registerGetReactors(l)).Methods(http.MethodGet)
 	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", registerCreateReactors(l)).Methods(http.MethodPost)
 }
 
 func registerCreateReactors(l logrus.FieldLogger) http.HandlerFunc {
-	return rest.RetrieveSpan(CreateReactor, func(span opentracing.Span) http.HandlerFunc {
+	return rest.RetrieveSpan(createReactor, func(span opentracing.Span) http.HandlerFunc {
 		return ParseMap(l, func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
 			return handleCreateReactor(l)(span)(worldId, channelId, mapId)
 		})
@@ -83,7 +83,7 @@ func handleCreateReactor(l logrus.FieldLogger) func(span opentracing.Span) func(
 }
 
 func registerGetReactors(l logrus.FieldLogger) http.HandlerFunc {
-	return rest.RetrieveSpan(GetReactors, func(span opentracing.Span) http.HandlerFunc {
+	return rest.RetrieveSpan(getReactors, func(span opentracing.Span) http.HandlerFunc {
 		return ParseMap(l, func(worldId byte, channelId byte, mapId uint32) http.HandlerFunc {
 			return handleGetReactors(l)(span)(worldId, channelId, mapId)
 		})
