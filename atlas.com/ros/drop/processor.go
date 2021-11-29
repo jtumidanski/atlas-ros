@@ -51,7 +51,7 @@ func Produce(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(worl
 func spawnItem(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, itemId uint32, uniqueId uint32, x int16, y int16, dropperX int16, dropperY int16, killerId uint32, dropType byte) {
 	return func(worldId byte, channelId byte, mapId uint32, itemId uint32, uniqueId uint32, x int16, y int16, dropperX int16, dropperY int16, killerId uint32, dropType byte) {
 		quantity := uint32(1)
-		spawnDrop(l, span)(worldId, channelId, mapId, itemId, quantity, 0, dropperX, dropperY, x, y, uniqueId, killerId, false, dropType)
+		spawnDrop(l, span)(worldId, channelId, mapId, itemId, quantity, 0, x, y, dropperX, dropperY, uniqueId, killerId, false, dropType)
 	}
 }
 
