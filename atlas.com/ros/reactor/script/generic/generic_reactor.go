@@ -179,7 +179,7 @@ func SpawnMonster(monsterId uint32) func(l logrus.FieldLogger, span opentracing.
 
 func SpawnFakeMonster(monsterId uint32) func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
 	return func(l logrus.FieldLogger, db *gorm.DB, c script.Context) {
-		//TODO
+		//TODO AT-16
 	}
 }
 

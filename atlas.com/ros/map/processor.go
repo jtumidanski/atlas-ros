@@ -4,39 +4,39 @@ import "github.com/sirupsen/logrus"
 
 func MonstersCount(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) uint32 {
 	return func(worldId byte, channelId byte, mapId uint32) uint32 {
-		// TODO
+		// TODO AT-10
 		return 0
 	}
 }
 
 func MonsterCount(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, monsterId uint32) int {
 	return func(worldId byte, channelId byte, mapId uint32, monsterId uint32) int {
-		// TODO
+		// TODO AT-10
 		return 0
 	}
 }
 
 func HitReactor(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, reactorName string) {
 	return func(worldId byte, channelId byte, mapId uint32, reactorName string) {
-		// TODO
+		// TODO AT-11
 	}
 }
 
 func MoveEnvironment(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, environment string, mode byte) {
 	return func(worldId byte, channelId byte, mapId uint32, environment string, mode byte) {
-		// TODO
+		// TODO AT-12
 	}
 }
 
 func ToggleEnvironment(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32, environment string) {
 	return func(worldId byte, channelId byte, mapId uint32, environment string) {
-		// TODO
+		// TODO AT-13
 	}
 }
 
 func KillAllMonsters(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) {
 	return func(worldId byte, channelId byte, mapId uint32) {
-		// TODO
+		// TODO AT-14
 	}
 }
 
@@ -55,7 +55,7 @@ func SummonState(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId 
 
 func CharactersInMap(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uint32) []uint32 {
 	return func(worldId byte, channelId byte, mapId uint32) []uint32 {
-		// TODO
+		// TODO AT-15
 		return []uint32{}
 	}
 }

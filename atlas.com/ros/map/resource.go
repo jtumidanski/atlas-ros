@@ -23,6 +23,8 @@ func InitResource(router *mux.Router, l logrus.FieldLogger, _ *gorm.DB) {
 	w := router.PathPrefix("/worlds").Subrouter()
 	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", registerGetReactors(l)).Methods(http.MethodGet)
 	w.HandleFunc("/{worldId}/channels/{channelId}/maps/{mapId}/reactors", registerCreateReactors(l)).Methods(http.MethodPost)
+	//TODO AT-1 implement reactors?name=
+	//TODO AT-2 implement reactors?classification=
 }
 
 func registerCreateReactors(l logrus.FieldLogger) http.HandlerFunc {

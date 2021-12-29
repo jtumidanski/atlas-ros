@@ -32,7 +32,7 @@ func Produce(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(worl
 		}
 		dx -= int16(12 * len(items))
 
-		//TODO get meso rate
+		//TODO AT-8 get meso rate
 		mesoRate := float64(1)
 
 		for _, i := range items {

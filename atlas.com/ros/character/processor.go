@@ -9,14 +9,14 @@ import (
 
 func GetDropRate(_ logrus.FieldLogger) func(characterId uint32) float64 {
 	return func(characterId uint32) float64 {
-		//TODO
+		//TODO AT-3
 		return 1
 	}
 }
 
 func NeedsQuestItem(_ logrus.FieldLogger) func(characterId uint32, itemId uint32, questId int32) bool {
 	return func(characterId uint32, itemId uint32, questId int32) bool {
-		//TODO
+		//TODO AT-4
 		return false
 	}
 }
@@ -47,32 +47,32 @@ func WarpRandom(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, 
 
 func QuestActive(_ logrus.FieldLogger) func(characterId uint32, questId uint32) bool {
 	return func(characterId uint32, questId uint32) bool {
-		// TODO
+		// TODO AT-5
 		return false
 	}
 }
 
 func QuestStarted(_ logrus.FieldLogger) func(characterId uint32, questId uint32) bool {
 	return func(characterId uint32, questId uint32) bool {
-		// TODO
+		// TODO AT-5
 		return false
 	}
 }
 
 func SetQuestProgress(_ logrus.FieldLogger) func(characterId uint32, questId uint32, infoNumber uint32, value int32) {
 	return func(characterId uint32, questId uint32, infoNumber uint32, value int32) {
-		// TODO
+		// TODO AT-6
 	}
 }
 
 func SetQuestProgressString(_ logrus.FieldLogger) func(characterId uint32, questId uint32, infoNumber uint32, value string) {
 	return func(characterId uint32, questId uint32, infoNumber uint32, value string) {
-		// TODO
+		// TODO AT-6
 	}
 }
 
 func SendNotice(l logrus.FieldLogger) func(characterId uint32, noticeType string, message string) {
 	return func(characterId uint32, noticeType string, message string) {
-		//TODO
+		//TODO AT-7
 	}
 }
