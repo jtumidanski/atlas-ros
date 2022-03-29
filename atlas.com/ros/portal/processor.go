@@ -1,6 +1,7 @@
 package portal
 
 import (
+	"atlas-ros/rest/requests"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"math/rand"
@@ -47,7 +48,7 @@ func RandomPortalIdProvider(l logrus.FieldLogger, span opentracing.Span) func(ma
 
 func ForMap(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32) ([]*Model, error) {
 	return func(mapId uint32) ([]*Model, error) {
-		resp, err := requestAll(l, span)(mapId)
+		resp, err := requestAll(mapId)(l, span)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +67,7 @@ func ForMap(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32) ([]*
 
 func GetByName(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32, portalName string) (*Model, error) {
 	return func(mapId uint32, portalName string) (*Model, error) {
-		resp, err := requestByName(l, span)(mapId, portalName)
+		resp, err := requestByName(mapId, portalName)(l, span)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +80,7 @@ func GetByName(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32, p
 	}
 }
 
-func makePortal(body *dataBody) (*Model, error) {
+func makePortal(body requests.DataBody[attributes]) (*Model, error) {
 	id, err := strconv.ParseUint(body.Id, 10, 32)
 	if err != nil {
 		return nil, err
