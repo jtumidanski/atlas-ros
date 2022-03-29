@@ -76,7 +76,7 @@ func handleCreateReactor(l logrus.FieldLogger) func(span opentracing.Span) func(
 					return
 				}
 				attr := li.Data.Attributes
-				emitCreateReactor(l, span)(worldId, channelId, mapId, attr.Classification, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
+				reactor.DeferCreate(l, span)(worldId, channelId, mapId, attr.Classification, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
 				w.WriteHeader(http.StatusAccepted)
 			}
 		}

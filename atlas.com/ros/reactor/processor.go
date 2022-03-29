@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+func DeferCreate(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, classification uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) {
+	return emitCreateReactor(l, span)
+}
+
 func Create(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, classification uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) (*Model, error) {
 	return func(worldId byte, channelId byte, mapId uint32, reactorId uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) (*Model, error) {
 		s, err := statistics.GetCache().GetFile(reactorId)

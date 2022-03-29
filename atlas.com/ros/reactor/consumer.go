@@ -24,19 +24,6 @@ func CreateConsumer(db *gorm.DB) func(groupId string) kafka.ConsumerConfig {
 	}
 }
 
-type createReactorCommand struct {
-	WorldId        byte   `json:"world_id"`
-	ChannelId      byte   `json:"channel_id"`
-	MapId          uint32 `json:"map_id"`
-	Classification uint32 `json:"classification"`
-	Name           string `json:"name"`
-	State          int8   `json:"state"`
-	X              int16  `json:"x"`
-	Y              int16  `json:"y"`
-	Delay          uint32 `json:"delay"`
-	Direction      byte   `json:"direction"`
-}
-
 func handleCreate(_ *gorm.DB) kafka.HandlerFunc[createReactorCommand] {
 	return func(l logrus.FieldLogger, span opentracing.Span, command createReactorCommand) {
 		_, err := Create(l, span)(command.WorldId, command.ChannelId, command.MapId, command.Classification, command.Name, command.State, command.X, command.Y, command.Delay, command.Direction)
