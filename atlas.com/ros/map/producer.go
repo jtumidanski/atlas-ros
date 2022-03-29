@@ -1,6 +1,7 @@
-package producers
+package _map
 
 import (
+	"atlas-ros/kafka"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 )
@@ -18,8 +19,8 @@ type createReactorCommand struct {
 	Direction      byte   `json:"direction"`
 }
 
-func CreateReactor(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, classification uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) {
-	producer := ProduceEvent(l, span, "TOPIC_CREATE_REACTOR_COMMAND")
+func emitCreateReactor(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, classification uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) {
+	producer := kafka.ProduceEvent(l, span, "TOPIC_CREATE_REACTOR_COMMAND")
 	return func(worldId byte, channelId byte, mapId uint32, classification uint32, name string, state int8, x int16, y int16, delay uint32, direction byte) {
 		command := &createReactorCommand{
 			WorldId:        worldId,
@@ -33,6 +34,6 @@ func CreateReactor(l logrus.FieldLogger, span opentracing.Span) func(worldId byt
 			Delay:          delay,
 			Direction:      direction,
 		}
-		producer(CreateKey(int(classification)), command)
+		producer(kafka.CreateKey(int(classification)), command)
 	}
 }

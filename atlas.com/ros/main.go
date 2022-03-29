@@ -2,7 +2,7 @@ package main
 
 import (
 	"atlas-ros/database"
-	"atlas-ros/kafka/consumers"
+	"atlas-ros/kafka"
 	"atlas-ros/logger"
 	_map "atlas-ros/map"
 	"atlas-ros/reactor"
@@ -21,6 +21,7 @@ import (
 )
 
 const serviceName = "atlas-ros"
+const consumerGroupId = "Reactor Orchestration Service"
 
 func main() {
 	l := logger.CreateLogger(serviceName)
@@ -49,7 +50,11 @@ func main() {
 
 	registry.GetRegistry().AddScripts(initializer.CreateScripts)
 
-	consumers.CreateEventConsumers(l, db, ctx, wg)
+	kafka.CreateConsumers(l, ctx, wg,
+		reactor.CreateConsumer(db)(consumerGroupId),
+		reactor.HitConsumer(db)(consumerGroupId),
+		reactor.TouchConsumer(db)(consumerGroupId),
+		reactor.ReleaseConsumer(db)(consumerGroupId))
 
 	rest.CreateService(l, db, ctx, wg, "/ms/ros", reactor.InitResource, _map.InitResource)
 

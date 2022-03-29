@@ -1,7 +1,6 @@
 package reactor
 
 import (
-	"atlas-ros/kafka/producers"
 	"atlas-ros/reactor/script"
 	registry2 "atlas-ros/reactor/script/registry"
 	"atlas-ros/reactor/statistics"
@@ -19,7 +18,7 @@ func Create(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, chan
 			return nil, err
 		}
 		m := GetRegistry().Create(worldId, channelId, mapId, reactorId, name, state, x, y, delay, direction, *s)
-		producers.Created(l, span)(worldId, channelId, mapId, m.Id())
+		emitCreated(l, span)(worldId, channelId, mapId, m.Id())
 		return &m, nil
 	}
 }
@@ -162,7 +161,7 @@ func Hit(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(id uint3
 
 func trigger(l logrus.FieldLogger, span opentracing.Span) func(r *Model, stance uint16) {
 	return func(r *Model, stance uint16) {
-		producers.Triggered(l, span)(r.WorldId(), r.ChannelId(), r.MapId(), r.Id(), stance)
+		emitTriggered(l, span)(r.WorldId(), r.ChannelId(), r.MapId(), r.Id(), stance)
 	}
 }
 
@@ -174,7 +173,7 @@ func destroy(l logrus.FieldLogger, span opentracing.Span) func(r *Model) {
 			return
 		}
 		clearTimeout(l)(dr)
-		producers.Destroyed(l, span)(dr.WorldId(), dr.ChannelId(), dr.MapId(), dr.Id())
+		emitDestroyed(l, span)(dr.WorldId(), dr.ChannelId(), dr.MapId(), dr.Id())
 		go respawn(l, span)(dr)
 	}
 }

@@ -1,6 +1,7 @@
-package producers
+package reactor
 
 import (
+	"atlas-ros/kafka"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 )
@@ -14,31 +15,31 @@ type reactorStatusEvent struct {
 	Stance    uint16 `json:"stance"`
 }
 
-func Created(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32) {
-	f := StatusEvent(l, span)
+func emitCreated(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32) {
+	f := emitStatusEvent(l, span)
 	return func(worldId byte, channelId byte, mapId uint32, id uint32) {
 		f(worldId, channelId, mapId, id, "CREATED", 0)
 	}
 }
 
-func Triggered(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32, stance uint16) {
-	f := StatusEvent(l, span)
+func emitTriggered(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32, stance uint16) {
+	f := emitStatusEvent(l, span)
 	return func(worldId byte, channelId byte, mapId uint32, id uint32, stance uint16) {
 		f(worldId, channelId, mapId, id, "TRIGGERED", stance)
 	}
 }
 
-func Destroyed(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32) {
-	f := StatusEvent(l, span)
+func emitDestroyed(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32) {
+	f := emitStatusEvent(l, span)
 	return func(worldId byte, channelId byte, mapId uint32, id uint32) {
 		f(worldId, channelId, mapId, id, "DESTROYED", 0)
 	}
 }
 
-func StatusEvent(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32, status string, stance uint16) {
-	producer := ProduceEvent(l, span, "TOPIC_REACTOR_STATUS_EVENT")
+func emitStatusEvent(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, mapId uint32, id uint32, status string, stance uint16) {
+	producer := kafka.ProduceEvent(l, span, "TOPIC_REACTOR_STATUS_EVENT")
 	return func(worldId byte, channelId byte, mapId uint32, id uint32, status string, stance uint16) {
 		e := &reactorStatusEvent{WorldId: worldId, ChannelId: channelId, MapId: mapId, Id: id, Status: status, Stance: stance}
-		producer(CreateKey(int(id)), e)
+		producer(kafka.CreateKey(int(id)), e)
 	}
 }

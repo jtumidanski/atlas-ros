@@ -1,7 +1,6 @@
 package character
 
 import (
-	"atlas-ros/kafka/producers"
 	"atlas-ros/portal"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
@@ -23,7 +22,7 @@ func NeedsQuestItem(_ logrus.FieldLogger) func(characterId uint32, itemId uint32
 
 func WarpToPortal(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, characterId uint32, mapId uint32, p portal.IdProvider) {
 	return func(worldId byte, channelId byte, characterId uint32, mapId uint32, p portal.IdProvider) {
-		producers.ChangeMap(l, span)(worldId, channelId, characterId, mapId, p())
+		emitChangeMap(l, span)(worldId, channelId, characterId, mapId, p())
 	}
 }
 

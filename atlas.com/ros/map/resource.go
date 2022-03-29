@@ -2,7 +2,6 @@ package _map
 
 import (
 	"atlas-ros/json"
-	"atlas-ros/kafka/producers"
 	"atlas-ros/reactor"
 	"atlas-ros/rest"
 	"atlas-ros/rest/resource"
@@ -77,7 +76,7 @@ func handleCreateReactor(l logrus.FieldLogger) func(span opentracing.Span) func(
 					return
 				}
 				attr := li.Data.Attributes
-				producers.CreateReactor(l, span)(worldId, channelId, mapId, attr.Classification, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
+				emitCreateReactor(l, span)(worldId, channelId, mapId, attr.Classification, attr.Name, attr.State, attr.X, attr.Y, attr.Delay, attr.FacingDirection)
 				w.WriteHeader(http.StatusAccepted)
 			}
 		}
