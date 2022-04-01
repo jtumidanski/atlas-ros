@@ -75,7 +75,8 @@ func calculateDropPosition(l logrus.FieldLogger, span opentracing.Span) func(map
 		if err != nil {
 			return fallbackX, fallbackY
 		} else {
-			return resp.Data().Attributes.X, resp.Data().Attributes.Y
+			attr := resp.Attributes
+			return attr.X, attr.Y
 		}
 	}
 }

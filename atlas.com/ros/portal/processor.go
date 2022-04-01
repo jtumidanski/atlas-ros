@@ -46,44 +46,22 @@ func RandomPortalIdProvider(l logrus.FieldLogger, span opentracing.Span) func(ma
 	}
 }
 
-func ForMap(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32) ([]*Model, error) {
-	return func(mapId uint32) ([]*Model, error) {
-		resp, err := requestAll(mapId)(l, span)
-		if err != nil {
-			return nil, err
-		}
-
-		results := make([]*Model, 0)
-		for _, d := range resp.DataList() {
-			p, err := makePortal(d)
-			if err != nil {
-				return nil, err
-			}
-			results = append(results, p)
-		}
-		return results, nil
+func ForMap(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32) ([]Model, error) {
+	return func(mapId uint32) ([]Model, error) {
+		return requests.SliceProvider[attributes, Model](l, span)(requestAll(mapId), makePortal)()
 	}
 }
 
-func GetByName(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32, portalName string) (*Model, error) {
-	return func(mapId uint32, portalName string) (*Model, error) {
-		resp, err := requestByName(mapId, portalName)(l, span)
-		if err != nil {
-			return nil, err
-		}
-
-		p, err := makePortal(resp.Data())
-		if err != nil {
-			return nil, err
-		}
-		return p, nil
+func GetByName(l logrus.FieldLogger, span opentracing.Span) func(mapId uint32, portalName string) (Model, error) {
+	return func(mapId uint32, portalName string) (Model, error) {
+		return requests.Provider[attributes, Model](l, span)(requestByName(mapId, portalName), makePortal)()
 	}
 }
 
-func makePortal(body requests.DataBody[attributes]) (*Model, error) {
+func makePortal(body requests.DataBody[attributes]) (Model, error) {
 	id, err := strconv.ParseUint(body.Id, 10, 32)
 	if err != nil {
-		return nil, err
+		return Model{}, err
 	}
 	attr := body.Attributes
 	return NewPortalModel(uint32(id), attr.Name, attr.Target, attr.TargetMapId, attr.Type, attr.X, attr.Y, attr.ScriptName), nil

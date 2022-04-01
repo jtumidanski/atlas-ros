@@ -31,8 +31,8 @@ func (p Model) Name() string {
 	return p.name
 }
 
-func NewPortalModel(id uint32, name string, target string, targetMapId uint32, theType uint8, x int16, y int16, scriptName string) *Model {
-	return &Model{
+func NewPortalModel(id uint32, name string, target string, targetMapId uint32, theType uint8, x int16, y int16, scriptName string) Model {
+	return Model{
 		id:          id,
 		name:        name,
 		target:      target,
