@@ -1,6 +1,8 @@
 package drop
 
 import (
+	"atlas-ros/database"
+	"atlas-ros/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"os"
@@ -38,13 +40,14 @@ func Initialize(l logrus.FieldLogger, db *gorm.DB) {
 	}
 }
 
-func GetByClassification(l logrus.FieldLogger, db *gorm.DB) func(classification uint32) []*Model {
-	return func(classification uint32) []*Model {
-		results, err := getByClassification(db)(classification)
-		if err != nil {
-			l.WithError(err).Warnf("Unable to retrieve drops for classification %d, proceeding with none.", classification)
-			return make([]*Model, 0)
-		}
-		return results
+func ByClassificationProvider(_ logrus.FieldLogger, db *gorm.DB) func(classification uint32) model.SliceProvider[Model] {
+	return func(classification uint32) model.SliceProvider[Model] {
+		return database.ModelSliceProvider[Model, entity](db)(getByClassification(classification), makeModel)
+	}
+}
+
+func GetByClassification(l logrus.FieldLogger, db *gorm.DB) func(classification uint32) ([]Model, error) {
+	return func(classification uint32) ([]Model, error) {
+		return ByClassificationProvider(l, db)(classification)()
 	}
 }
