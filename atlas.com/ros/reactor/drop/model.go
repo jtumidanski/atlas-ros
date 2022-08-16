@@ -18,8 +18,8 @@ func (m Model) QuestId() int32 {
 	return m.questId
 }
 
-func NewMesoModel(chance uint32) *Model {
-	return &Model{
+func NewMesoModel(chance uint32) Model {
+	return Model{
 		itemId:  0,
 		questId: -1,
 		chance:  chance,

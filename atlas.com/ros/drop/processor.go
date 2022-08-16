@@ -22,7 +22,11 @@ func Produce(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(worl
 		}
 
 		dr := character.GetDropRate(l)(characterId)
-		di := drop2.GetByClassification(l, db)(r.Classification())
+		di, err := drop2.GetByClassification(l, db)(r.Classification())
+		if err != nil {
+			l.WithError(err).Errorf("Unable to retrieve reactors with classification %d.", r.Classification())
+			return
+		}
 		items := assembleReactorDropEntries(l)(characterId, generateDropList(l)(di, dr, meso, mesoChance, minItems))
 
 		dx := r.X()
@@ -81,11 +85,11 @@ func calculateDropPosition(l logrus.FieldLogger, span opentracing.Span) func(map
 	}
 }
 
-func assembleReactorDropEntries(l logrus.FieldLogger) func(uint32, []*drop2.Model) []*drop2.Model {
-	return func(characterId uint32, items []*drop2.Model) []*drop2.Model {
-		de := make([]*drop2.Model, 0)
-		vqe := make([]*drop2.Model, 0)
-		oqe := make([]*drop2.Model, 0)
+func assembleReactorDropEntries(l logrus.FieldLogger) func(uint32, []drop2.Model) []drop2.Model {
+	return func(characterId uint32, items []drop2.Model) []drop2.Model {
+		de := make([]drop2.Model, 0)
+		vqe := make([]drop2.Model, 0)
+		oqe := make([]drop2.Model, 0)
 		for _, d := range items {
 			if !item.QuestItem(l)(d.ItemId()) {
 				de = append(de, d)
@@ -101,13 +105,13 @@ func assembleReactorDropEntries(l logrus.FieldLogger) func(uint32, []*drop2.Mode
 		rand.Shuffle(len(vqe), func(i, j int) { vqe[i], vqe[j] = vqe[j], vqe[i] })
 		rand.Shuffle(len(oqe), func(i, j int) { oqe[i], oqe[j] = oqe[j], oqe[i] })
 
-		ir := make([]*drop2.Model, 0)
+		ir := make([]drop2.Model, 0)
 		ir = append(ir, de...)
 		ir = append(ir, vqe...)
 		ir = append(ir, oqe...)
 
-		left := make([]*drop2.Model, 0)
-		right := make([]*drop2.Model, 0)
+		left := make([]drop2.Model, 0)
+		right := make([]drop2.Model, 0)
 		for i := range ir {
 			if i%2 == 0 {
 				left = append(left, ir[i])
@@ -121,16 +125,16 @@ func assembleReactorDropEntries(l logrus.FieldLogger) func(uint32, []*drop2.Mode
 			left[i], left[j] = left[j], left[i]
 		}
 
-		results := make([]*drop2.Model, 0)
+		results := make([]drop2.Model, 0)
 		results = append(results, left...)
 		results = append(results, right...)
 		return results
 	}
 }
 
-func generateDropList(_ logrus.FieldLogger) func([]*drop2.Model, float64, bool, uint32, uint32) []*drop2.Model {
-	return func(drops []*drop2.Model, dropRate float64, meso bool, mesoChance uint32, minItems uint32) []*drop2.Model {
-		results := make([]*drop2.Model, 0)
+func generateDropList(_ logrus.FieldLogger) func([]drop2.Model, float64, bool, uint32, uint32) []drop2.Model {
+	return func(drops []drop2.Model, dropRate float64, meso bool, mesoChance uint32, minItems uint32) []drop2.Model {
+		results := make([]drop2.Model, 0)
 		if meso && rand.Float64() < 1.0/float64(mesoChance) {
 			results = append(results, drop2.NewMesoModel(mesoChance))
 		}
