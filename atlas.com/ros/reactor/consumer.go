@@ -74,10 +74,7 @@ type releaseReactorCommand struct {
 
 func handleRelease(db *gorm.DB) kafka.HandlerFunc[releaseReactorCommand] {
 	return func(l logrus.FieldLogger, span opentracing.Span, command releaseReactorCommand) {
-		err := Release(l, span, db)(command.Id, command.CharacterId)
-		if err != nil {
-			l.WithError(err).Errorf("Unable to release reactor %d in map %d by command.", command.Id, command.MapId)
-		}
+		Release(l, span, db)(command.Id, command.CharacterId)
 	}
 }
 
@@ -97,9 +94,6 @@ type touchReactorCommand struct {
 
 func handleTouch(db *gorm.DB) kafka.HandlerFunc[touchReactorCommand] {
 	return func(l logrus.FieldLogger, span opentracing.Span, command touchReactorCommand) {
-		err := Touch(l, span, db)(command.Id, command.CharacterId)
-		if err != nil {
-			l.WithError(err).Errorf("Unable to touch reactor %d in map %d by command.", command.Id, command.MapId)
-		}
+		Touch(l, span, db)(command.Id, command.CharacterId)
 	}
 }

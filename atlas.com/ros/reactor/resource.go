@@ -92,7 +92,7 @@ func handleGetReactor(l logrus.FieldLogger, _ *gorm.DB) func(span opentracing.Sp
 					return
 				}
 
-				result := &DataContainer{Data: MakeReactorBody(*r)}
+				result := &DataContainer{Data: MakeReactorBody(r)}
 
 				w.WriteHeader(http.StatusOK)
 				err = json.ToJSON(result, w)

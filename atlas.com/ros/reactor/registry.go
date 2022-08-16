@@ -37,14 +37,14 @@ func GetRegistry() *registry {
 	return reg
 }
 
-func (r *registry) Get(id uint32) (*Model, error) {
+func (r *registry) Get(id uint32) (Model, error) {
 	r.lock.RLock()
 	if val, ok := r.reactors[id]; ok {
 		r.lock.RUnlock()
-		return val, nil
+		return *val, nil
 	} else {
 		r.lock.RUnlock()
-		return nil, errors.New("unable to locate reactor")
+		return Model{}, errors.New("unable to locate reactor")
 	}
 }
 
@@ -143,7 +143,7 @@ func (r *registry) Create(worldId byte, channelId byte, mapId uint32, classifica
 	return *m
 }
 
-func (r *registry) Update(id uint32, modifiers ...Modifier) (*Model, error) {
+func (r *registry) Update(id uint32, modifiers ...Modifier) (Model, error) {
 	r.lock.Lock()
 	if val, ok := r.reactors[id]; ok {
 		r.lock.Unlock()
@@ -152,10 +152,10 @@ func (r *registry) Update(id uint32, modifiers ...Modifier) (*Model, error) {
 		}
 		updateTime()(val)
 		r.reactors[id] = val
-		return val, nil
+		return *val, nil
 	} else {
 		r.lock.Unlock()
-		return nil, errors.New("unable to locate reactor")
+		return Model{}, errors.New("unable to locate reactor")
 	}
 }
 
@@ -173,7 +173,7 @@ func (r *registry) getNextId() uint32 {
 	return runningId
 }
 
-func (r *registry) Destroy(id uint32) (*Model, error) {
+func (r *registry) Destroy(id uint32) (Model, error) {
 	return r.Update(id, setDestroyed(), updateTime())
 }
 

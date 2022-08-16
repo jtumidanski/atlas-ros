@@ -1,9 +1,11 @@
 package reactor
 
 import (
+	"atlas-ros/model"
 	"atlas-ros/reactor/script"
 	registry2 "atlas-ros/reactor/script/registry"
 	"atlas-ros/reactor/statistics"
+	"errors"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -33,51 +35,58 @@ func GetInMap(_ logrus.FieldLogger) func(worldId byte, channelId byte, mapId uin
 	}
 }
 
-type IdProvider func() uint32
-
-func Get(provider IdProvider) (*Model, error) {
-	id := provider()
-	return GetRegistry().Get(id)
-}
-
-func FixedIdProvider(id uint32) IdProvider {
-	return func() uint32 {
-		return id
+func ByIdProvider(id uint32) model.Provider[Model] {
+	return func() (Model, error) {
+		return GetRegistry().Get(id)
 	}
 }
 
-func ByNameInMapProvider(worldId byte, channelId byte, mapId uint32, name string) IdProvider {
-	return func() uint32 {
-		for _, rs := range GetRegistry().GetInMap(worldId, channelId, mapId) {
-			if name == rs.Name() {
-				return rs.Id()
+func InMapProvider(worldId byte, channelId byte, mapId uint32) model.SliceProvider[Model] {
+	return func() ([]Model, error) {
+		return GetRegistry().GetInMap(worldId, channelId, mapId), nil
+	}
+}
+
+func ByNameFilter(name string) model.PreciselyOneFilter[Model] {
+	return func(rs []Model) (Model, error) {
+		for _, r := range rs {
+			if r.Name() == name {
+				return r, nil
 			}
 		}
-		return 0
+		return Model{}, errors.New("no match")
 	}
 }
 
-func ByClassificationInMapProvider(worldId byte, channelId byte, mapId uint32, classification uint32) IdProvider {
-	return func() uint32 {
-		for _, rs := range GetRegistry().GetInMap(worldId, channelId, mapId) {
-			if classification == rs.Classification() {
-				return rs.Id()
+func ByNameInMapProvider(worldId byte, channelId byte, mapId uint32, name string) model.Provider[Model] {
+	return model.SliceProviderToProviderAdapter[Model](InMapProvider(worldId, channelId, mapId), ByNameFilter(name))
+}
+
+func ByClassificationFilter(classification uint32) model.PreciselyOneFilter[Model] {
+	return func(rs []Model) (Model, error) {
+		for _, r := range rs {
+			if r.Classification() == classification {
+				return r, nil
 			}
 		}
-		return 0
+		return Model{}, errors.New("no match")
 	}
 }
 
-func GetById(id uint32) (*Model, error) {
-	return Get(FixedIdProvider(id))
+func ByClassificationInMapProvider(worldId byte, channelId byte, mapId uint32, classification uint32) model.Provider[Model] {
+	return model.SliceProviderToProviderAdapter[Model](InMapProvider(worldId, channelId, mapId), ByClassificationFilter(classification))
 }
 
-func GetByNameInMap(worldId byte, channelId byte, mapId uint32, name string) (*Model, error) {
-	return Get(ByNameInMapProvider(worldId, channelId, mapId, name))
+func GetById(id uint32) (Model, error) {
+	return ByIdProvider(id)()
 }
 
-func GetByClassificationInMap(worldId byte, channelId byte, mapId uint32, classification uint32) (*Model, error) {
-	return Get(ByClassificationInMapProvider(worldId, channelId, mapId, classification))
+func GetByNameInMap(worldId byte, channelId byte, mapId uint32, name string) (Model, error) {
+	return ByNameInMapProvider(worldId, channelId, mapId, name)()
+}
+
+func GetByClassificationInMap(worldId byte, channelId byte, mapId uint32, classification uint32) (Model, error) {
+	return ByClassificationInMapProvider(worldId, channelId, mapId, classification)()
 }
 
 func Hit(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(id uint32, characterId uint32, stance uint16, skillId uint32) error {
@@ -163,14 +172,14 @@ func Hit(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(id uint3
 	}
 }
 
-func trigger(l logrus.FieldLogger, span opentracing.Span) func(r *Model, stance uint16) {
-	return func(r *Model, stance uint16) {
+func trigger(l logrus.FieldLogger, span opentracing.Span) func(r Model, stance uint16) {
+	return func(r Model, stance uint16) {
 		emitTriggered(l, span)(r.WorldId(), r.ChannelId(), r.MapId(), r.Id(), stance)
 	}
 }
 
-func destroy(l logrus.FieldLogger, span opentracing.Span) func(r *Model) {
-	return func(r *Model) {
+func destroy(l logrus.FieldLogger, span opentracing.Span) func(r Model) {
+	return func(r Model) {
 		dr, err := GetRegistry().Destroy(r.Id())
 		if err != nil {
 			l.WithError(err).Errorf("Unable to destroy reactor %d.", r.Id())
@@ -182,8 +191,8 @@ func destroy(l logrus.FieldLogger, span opentracing.Span) func(r *Model) {
 	}
 }
 
-func respawn(l logrus.FieldLogger, span opentracing.Span) func(r *Model) {
-	return func(r *Model) {
+func respawn(l logrus.FieldLogger, span opentracing.Span) func(r Model) {
+	return func(r Model) {
 		time.Sleep(time.Duration(r.Delay()) * time.Millisecond)
 
 		GetRegistry().Remove(r.Id())
@@ -195,14 +204,14 @@ func respawn(l logrus.FieldLogger, span opentracing.Span) func(r *Model) {
 	}
 }
 
-func clearTimeout(_ logrus.FieldLogger) func(r *Model) {
-	return func(r *Model) {
+func clearTimeout(_ logrus.FieldLogger) func(r Model) {
+	return func(r Model) {
 		TimeoutRegistry().Cancel(r.Id())
 	}
 }
 
-func refreshTimeout(l logrus.FieldLogger, span opentracing.Span) func(r *Model) {
-	return func(r *Model) {
+func refreshTimeout(l logrus.FieldLogger, span opentracing.Span) func(r Model) {
+	return func(r Model) {
 		to := r.Timeout()
 		if to > -1 {
 			ns := r.TimeoutState()
@@ -211,7 +220,7 @@ func refreshTimeout(l logrus.FieldLogger, span opentracing.Span) func(r *Model) 
 	}
 }
 
-func SetEventState(reactorId uint32, newState byte) (*Model, error) {
+func SetEventState(reactorId uint32, newState byte) (Model, error) {
 	return GetRegistry().Update(reactorId, setEventState(newState))
 }
 
@@ -230,41 +239,33 @@ func TryForceHitReactor(l logrus.FieldLogger, span opentracing.Span) func(reacto
 	}
 }
 
-func searchItem(_ logrus.FieldLogger) func(r *Model) {
-	return func(r *Model) {
+func searchItem(_ logrus.FieldLogger) func(r Model) {
+	return func(r Model) {
 		//TODO do not know if this is "necessary" at this point
 	}
 }
 
-func Touch(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(id uint32, characterId uint32) error {
-	return func(id uint32, characterId uint32) error {
-		return For(id, performScriptAction(l, span, db)(characterId, script.InvokeTouch))
+func Touch(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(id uint32, characterId uint32) {
+	return func(id uint32, characterId uint32) {
+		IfPresent(id, performScriptAction(l, span, db)(characterId, script.InvokeTouch))
 	}
 }
 
-func Release(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(id uint32, characterId uint32) error {
-	return func(id uint32, characterId uint32) error {
-		return For(id, performScriptAction(l, span, db)(characterId, script.InvokeRelease))
+func Release(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) func(id uint32, characterId uint32) {
+	return func(id uint32, characterId uint32) {
+		IfPresent(id, performScriptAction(l, span, db)(characterId, script.InvokeRelease))
 	}
 }
 
-// For applies an Operator function on a reactor, given its id
-func For(id uint32, rf Operator) error {
-	r, err := GetRegistry().Get(id)
-	if err != nil {
-		return err
-	}
-	return rf(r)
+func IfPresent(id uint32, op model.Operator[Model]) {
+	model.IfPresent[Model](ByIdProvider(id), op)
 }
 
-// Operator a function which operators on a model
-type Operator func(*Model) error
-
-type CharacterAction func(uint32, script.Action) Operator
+type CharacterAction func(uint32, script.Action) model.Operator[Model]
 
 func performScriptAction(l logrus.FieldLogger, span opentracing.Span, db *gorm.DB) CharacterAction {
-	return func(characterId uint32, action script.Action) Operator {
-		return func(m *Model) error {
+	return func(characterId uint32, action script.Action) model.Operator[Model] {
+		return func(m Model) error {
 			c := script.Context{WorldId: m.WorldId(), ChannelId: m.ChannelId(), MapId: m.MapId(), CharacterId: characterId, ReactorClassification: m.Classification(), ReactorId: m.Id()}
 			s, err := registry2.GetRegistry().GetScript(m.Classification())
 			if err != nil {

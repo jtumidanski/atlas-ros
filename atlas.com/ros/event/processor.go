@@ -1,15 +1,13 @@
 package event
 
 import (
+	"atlas-ros/model"
 	"github.com/sirupsen/logrus"
 	"time"
 )
 
-// IdProvider is a function which provides an event id
-type IdProvider func() uint32
-
 // ParticipatingCharacterIdProvider retrieves an event id given a character who is presumably participating in the event
-func ParticipatingCharacterIdProvider(_ uint32) IdProvider {
+func ParticipatingCharacterIdProvider(_ uint32) model.IdProvider[uint32] {
 	return func() uint32 {
 		// TODO AT-9 query the event id by character who is participating
 		return 0
@@ -17,8 +15,8 @@ func ParticipatingCharacterIdProvider(_ uint32) IdProvider {
 }
 
 // Get returns the event given the id provided by the IdProvider
-func Get(_ logrus.FieldLogger) func(provider IdProvider) (*Model, error) {
-	return func(provider IdProvider) (*Model, error) {
+func Get(_ logrus.FieldLogger) func(provider model.IdProvider[uint32]) (*Model, error) {
+	return func(provider model.IdProvider[uint32]) (*Model, error) {
 		// TODO AT-9
 		id := provider()
 		return &Model{id: id}, nil
@@ -81,8 +79,8 @@ func ParticipatingInEvent(l logrus.FieldLogger) func(characterId uint32) bool {
 	}
 }
 
-func BlueMessageParticipants(l logrus.FieldLogger) func(provider IdProvider, message string) {
-	return func(provider IdProvider, message string) {
+func BlueMessageParticipants(l logrus.FieldLogger) func(provider model.IdProvider[uint32], message string) {
+	return func(provider model.IdProvider[uint32], message string) {
 		_, err := Get(l)(provider)
 		if err != nil {
 			l.WithError(err).Errorf("Unable to message event participants, as the event could not be located.")

@@ -1,6 +1,7 @@
 package character
 
 import (
+	"atlas-ros/model"
 	"atlas-ros/portal"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
@@ -20,27 +21,27 @@ func NeedsQuestItem(_ logrus.FieldLogger) func(characterId uint32, itemId uint32
 	}
 }
 
-func WarpToPortal(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, characterId uint32, mapId uint32, p portal.IdProvider) {
-	return func(worldId byte, channelId byte, characterId uint32, mapId uint32, p portal.IdProvider) {
+func WarpToPortal(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, characterId uint32, mapId uint32, p model.IdProvider[uint32]) {
+	return func(worldId byte, channelId byte, characterId uint32, mapId uint32, p model.IdProvider[uint32]) {
 		emitChangeMap(l, span)(worldId, channelId, characterId, mapId, p())
 	}
 }
 
 func WarpById(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, characterId uint32, mapId uint32, portalId uint32) {
 	return func(worldId byte, channelId byte, characterId uint32, mapId uint32, portalId uint32) {
-		WarpToPortal(l, span)(worldId, channelId, characterId, mapId, portal.FixedPortalIdProvider(portalId))
+		WarpToPortal(l, span)(worldId, channelId, characterId, mapId, model.FixedIdProvider[uint32](portalId))
 	}
 }
 
 func WarpByName(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, characterId uint32, mapId uint32, portalName string) {
 	return func(worldId byte, channelId byte, characterId uint32, mapId uint32, portalName string) {
-		WarpToPortal(l, span)(worldId, channelId, characterId, mapId, portal.ByNamePortalIdProvider(l, span)(mapId, portalName))
+		WarpToPortal(l, span)(worldId, channelId, characterId, mapId, portal.ByNameIdProvider(l, span)(mapId, portalName))
 	}
 }
 
 func WarpRandom(l logrus.FieldLogger, span opentracing.Span) func(worldId byte, channelId byte, characterId uint32, mapId uint32) {
 	return func(worldId byte, channelId byte, characterId uint32, mapId uint32) {
-		WarpToPortal(l, span)(worldId, channelId, characterId, mapId, portal.RandomPortalIdProvider(l, span)(mapId))
+		WarpToPortal(l, span)(worldId, channelId, characterId, mapId, portal.RandomIdProvider(l, span)(mapId))
 	}
 }
 
